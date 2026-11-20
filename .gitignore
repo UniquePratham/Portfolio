@@ -5,3 +5,9 @@ _staging
 .DS_Store
 .firebase
 *.log
+
+# Added by repo hygiene pass
+.env
+.env.local
+__pycache__/
+node_modules/
