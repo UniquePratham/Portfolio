@@ -11,3 +11,6 @@ _staging
 .env.local
 __pycache__/
 node_modules/
+
+# Vercel local state (contains project tokens)
+.vercel/
