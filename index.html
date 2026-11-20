@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pratham Agarwal — Full Stack Developer</title>
+    <meta
+      name="description"
+      content="Pratham Agarwal is a full stack developer in Kolkata building real-time systems with React, Next.js, Three.js and Python."
+    />
+    <meta name="theme-color" content="#050505" />
+    <link rel="canonical" href="https://uniquepratham-portfolio.web.app/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Pratham Agarwal — Full Stack Developer" />
+    <meta
+      property="og:description"
+      content="Full stack developer building real-time systems with React, Next.js, Three.js and Python."
+    />
+    <meta property="og:url" content="https://uniquepratham-portfolio.web.app/" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" as="image" href="/frames/desktop/f0000.webp" />
+  </head>
+
+  <body>
+    <script>
+      document.documentElement.classList.add('js');
+    </script>
+    <a class="sr-only" href="#main">Skip to content</a>
+
+    <div class="preloader" id="preloader" data-state="loading" aria-hidden="true">
+      <div class="preloader__inner">
+        <div class="preloader__mark">
+          <span>Pratham Agarwal</span>
+          <span class="preloader__count" id="preloader-count">0%</span>
+        </div>
+        <div class="preloader__track"><div class="preloader__fill" id="preloader-fill"></div></div>
+        <p class="preloader__label" id="preloader-label">Loading sequence</p>
+      </div>
+    </div>
+
+    <header class="nav" id="nav" data-scrolled="false" data-open="false">
+      <div class="shell nav__inner">
+        <a class="nav__brand" href="#top">Pratham<span>.</span></a>
+
+        <nav class="nav__links" id="nav-links" aria-label="Primary">
+          <a href="#about">About</a>
+          <a href="#work">Work</a>
+          <a href="#lab">Lab</a>
+          <a href="#skills">Skills</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <a class="nav__cta" href="mailto:gargpratham71@gmail.com">Available for work</a>
+
+        <button class="nav__toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- ================= Hero ================= -->
+      <section class="hero" id="top">
+        <div class="hero__glow" aria-hidden="true"></div>
+        <div class="shell hero__grid">
+          <div class="hero__meta">
+            <span>Kolkata, India</span>
+            <span>B.Tech CSE · 2026</span>
+            <span>Open to full stack roles</span>
+          </div>
+
+          <h1 class="hero__title">
+            I build systems that<br />
+            hold up under <em>pressure</em>.
+          </h1>
+
+          <p class="hero__lede">
+            Full stack developer working across React, Next.js and Python — with a habit of
+            shipping things that run in the real world, not just in a demo.
+          </p>
+
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#work">
+              See the work
+              <svg class="btn__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+            <a class="btn btn--ghost" href="/Pratham_Agarwal.pdf" target="_blank" rel="noopener">
+              Résumé
+            </a>
+          </div>
+        </div>
+
+        <div class="hero__scroll" aria-hidden="true">Scroll</div>
+      </section>
+
+      <!-- ================= Sequence ================= -->
+      <section class="sequence" id="sequence" aria-label="Introduction sequence">
+        <div class="sequence__sticky">
+          <canvas class="sequence__canvas" id="sequence-canvas" aria-hidden="true"></canvas>
+          <div class="sequence__vignette" aria-hidden="true"></div>
+
+          <div class="sequence__progress" aria-hidden="true"><i id="sequence-progress"></i></div>
+
+          <div class="sequence__caption">
+            <p id="sequence-caption">
+              Most portfolios show a picture.<br />
+              This one <em>moves</em>.
+            </p>
+          </div>
+
+          <div class="sequence__index" aria-hidden="true">
+            <b id="sequence-current">001</b>
+            <span>/ 121</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= About ================= -->
+      <section class="section" id="about">
+        <div class="shell">
+          <div class="section__head" data-reveal>
+            <p class="eyebrow">01 — About</p>
+            <h2 class="section__title">Engineer first,<br /><em>builder</em> always.</h2>
+          </div>
+
+          <div class="about__grid">
+            <div class="about__body" data-reveal>
+              <p>
+                I'm Pratham, a final-year Computer Science student at the
+                <strong>University of Calcutta</strong>. I got into engineering the usual way —
+                curiosity about how things work — and stayed because I like the part where
+                something finally runs.
+              </p>
+              <p>
+                My work sits where <strong>hardware meets interface</strong>. I've built an IoT
+                cardiac monitor that dispatches emergency alerts over a blockchain ledger, and an
+                OCR pipeline that reads Hindi and English out of the same image. Both started as
+                hackathon problems with a clock running.
+              </p>
+              <p>
+                I care about the unglamorous parts: latency, failure states, and whether the thing
+                still works when the network drops. That's usually where a project earns its keep.
+              </p>
+            </div>
+
+            <dl class="about__facts" data-reveal style="--reveal-delay: 120ms">
+              <div class="fact">
+                <dt>Based in</dt>
+                <dd>Kolkata, West Bengal</dd>
+              </div>
+              <div class="fact">
+                <dt>Studying</dt>
+                <dd>B.Tech CSE · CGPA 8.5 · 2026</dd>
+              </div>
+              <div class="fact">
+                <dt>Focus</dt>
+                <dd>Full stack · Real-time systems · IoT</dd>
+              </div>
+              <div class="fact">
+                <dt>Languages</dt>
+                <dd>English · Hindi · Nepali</dd>
+              </div>
+              <div class="fact">
+                <dt>Currently</dt>
+                <dd>Open to full stack roles</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= Work ================= -->
+      <section class="section" id="work">
+        <div class="shell">
+          <div class="section__head" data-reveal>
+            <p class="eyebrow">02 — Selected work</p>
+            <h2 class="section__title">Four things I<br />actually <em>shipped</em>.</h2>
+            <p class="section__lede">
+              Not a list of tutorials. Each of these has a live deployment, a repository, and a
+              problem it was built to solve.
+            </p>
+          </div>
+
+          <div class="work__list">
+            <article class="project" data-reveal>
+              <div class="project__media">
+                <img
+                  src="/work/vitality.webp"
+                  alt="Vitality AI landing page with doctor search and emergency triage cards"
+                  width="1600"
+                  height="818"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="project__body">
+                <p class="project__index">01 / 2024</p>
+                <h3 class="project__title">Vitality AI</h3>
+                <p class="project__desc">
+                  An IoT health emergency system. ESP-32 cardiometers stream heartbeat data, a
+                  predictive model flags anomalies, and blockchain-backed alerts dispatch an
+                  ambulance before the patient can call for one.
+                </p>
+                <div class="project__tags">
+                  <span class="tag">Next.js</span>
+                  <span class="tag">ESP-32</span>
+                  <span class="tag">MongoDB</span>
+                  <span class="tag">Blockchain</span>
+                </div>
+                <div class="project__links">
+                  <a class="link-arrow" href="https://vitalityai.vercel.app/" target="_blank" rel="noopener">
+                    Live
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+                  <a class="link-arrow" href="https://github.com/UniquePratham/VitalityAI" target="_blank" rel="noopener">
+                    Source
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <article class="project" data-reveal>
+              <div class="project__media">
+                <img
+                  src="/work/urbanmotion.webp"
+                  alt="Urban Motion car rental landing page with a green sports car"
+                  width="1600"
+                  height="809"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="project__body">
+                <p class="project__index">02 / 2024</p>
+                <h3 class="project__title">Urban Motion</h3>
+                <p class="project__desc">
+                  A luxury car rental front end built around a single idea: let the car carry the
+                  page. Heavy type, a restrained palette, and motion that stays out of the way of
+                  the booking flow.
+                </p>
+                <div class="project__tags">
+                  <span class="tag">React</span>
+                  <span class="tag">GSAP</span>
+                  <span class="tag">Responsive</span>
+                </div>
+                <div class="project__links">
+                  <a class="link-arrow" href="https://github.com/UniquePratham" target="_blank" rel="noopener">
+                    Source
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <article class="project" data-reveal>
+              <div class="project__media">
+                <img
+                  src="/work/pangea.webp"
+                  alt="Pangea News landing page with a wireframe world map and satellite imagery"
+                  width="1600"
+                  height="782"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="project__body">
+                <p class="project__index">03 / 2024</p>
+                <h3 class="project__title">Pangea News</h3>
+                <p class="project__desc">
+                  A global news reader organised by region rather than by feed. Built to make
+                  international coverage legible at a glance, with category routing across world,
+                  business, health, technology and sport.
+                </p>
+                <div class="project__tags">
+                  <span class="tag">Next.js</span>
+                  <span class="tag">REST APIs</span>
+                  <span class="tag">Chakra UI</span>
+                </div>
+                <div class="project__links">
+                  <a class="link-arrow" href="https://github.com/UniquePratham" target="_blank" rel="noopener">
+                    Source
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <article class="project" data-reveal>
+              <div class="project__media">
+                <img
+                  src="/work/spotify.webp"
+                  alt="A personal Spotify-style playlist interface with a track list"
+                  width="1600"
+                  height="727"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="project__body">
+                <p class="project__index">04 / 2024</p>
+                <h3 class="project__title">Spotify, Rebuilt</h3>
+                <p class="project__desc">
+                  A personal take on the Spotify web player — a curated playlist with a custom
+                  track list, hover states and a scrollbar that behaves. Built to practise
+                  interface detail rather than to clone a product.
+                </p>
+                <div class="project__tags">
+                  <span class="tag">HTML</span>
+                  <span class="tag">CSS</span>
+                  <span class="tag">JavaScript</span>
+                </div>
+                <div class="project__links">
+                  <a class="link-arrow" href="https://github.com/UniquePratham" target="_blank" rel="noopener">
+                    Source
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="also" data-reveal>
+            <p class="eyebrow">Also built</p>
+            <ul class="also__list">
+              <li>
+                <span class="also__name">DualText OCR Fusion</span>
+                <span class="also__desc">Multilingual OCR with keyword search — Byaldi, Qwen2-VL, Streamlit</span>
+                <a class="link-arrow" href="https://huggingface.co/spaces/UniquePratham/DualTextOCRFusion" target="_blank" rel="noopener">
+                  Demo
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </a>
+              </li>
+              <li>
+                <span class="also__name">Snake Mania</span>
+                <span class="also__desc">Canvas game with progressive difficulty and local high scores</span>
+                <a class="link-arrow" href="https://github.com/UniquePratham" target="_blank" rel="noopener">
+                  Source
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </a>
+              </li>
+              <li>
+                <span class="also__name">Tic Tac Toe</span>
+                <span class="also__desc">Minimax opponent with an unbeatable mode</span>
+                <a class="link-arrow" href="https://github.com/UniquePratham" target="_blank" rel="noopener">
+                  Source
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= Lab ================= -->
+      <section class="section lab" id="lab">
+        <div class="shell">
+          <div class="section__head" data-reveal>
+            <p class="eyebrow">03 — Lab</p>
+            <h2 class="section__title">The same face,<br /><em>rendered</em>.</h2>
+            <p class="section__lede">
+              A real-time 3D avatar built in Three.js. Drag to orbit, scroll to zoom. It's the
+              same person as the sequence above — one is a film, this one is geometry.
+            </p>
+          </div>
+
+          <div class="lab__grid">
+            <div class="lab__stage" id="lab-stage" data-interacted="false">
+              <div class="lab__fallback" id="lab-fallback" hidden>
+                Your browser can't render WebGL, so here's the short version: it's a 3D model of me.
+              </div>
+              <p class="lab__hint">Drag to orbit</p>
+            </div>
+
+            <div class="lab__body" data-reveal>
+              <h3 class="section__title" style="font-size: var(--step-4)">Built with Three.js</h3>
+              <p class="section__lede" style="font-size: var(--step-0)">
+                The model is compressed with Meshopt and its textures re-encoded to WebP, which
+                takes it from 9.6 MB down to about 1 MB. Lighting is a three-point studio rig —
+                key, fill and rim — so the silhouette reads against the dark ground.
+              </p>
+
+              <div class="lab__specs">
+                <div class="spec"><span>Renderer</span><span>Three.js · WebGL2</span></div>
+                <div class="spec"><span>Compression</span><span>Meshopt + WebP</span></div>
+                <div class="spec"><span>Payload</span><span>1.0 MB</span></div>
+                <div class="spec"><span>Interaction</span><span>Orbit · Damped</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= Skills ================= -->
+      <section class="section" id="skills">
+        <div class="shell">
+          <div class="section__head" data-reveal>
+            <p class="eyebrow">04 — Toolkit</p>
+            <h2 class="section__title">What I reach<br />for, and <em>why</em>.</h2>
+          </div>
+
+          <div class="skills__grid">
+            <div class="skill-group" data-reveal>
+              <h3>Languages</h3>
+              <ul>
+                <li>JavaScript <small>primary</small></li>
+                <li>Python <small>primary</small></li>
+                <li>TypeScript <small>daily</small></li>
+                <li>C / C++ <small>systems</small></li>
+                <li>Java <small>coursework</small></li>
+              </ul>
+            </div>
+
+            <div class="skill-group" data-reveal style="--reveal-delay: 80ms">
+              <h3>Frontend</h3>
+              <ul>
+                <li>React <small>3 yrs</small></li>
+                <li>Next.js <small>3 yrs</small></li>
+                <li>Three.js <small>2 yrs</small></li>
+                <li>Chakra UI <small>2 yrs</small></li>
+                <li>GSAP <small>2 yrs</small></li>
+              </ul>
+            </div>
+
+            <div class="skill-group" data-reveal style="--reveal-delay: 160ms">
+              <h3>Backend &amp; data</h3>
+              <ul>
+                <li>Node / Express <small>3 yrs</small></li>
+                <li>MongoDB <small>2 yrs</small></li>
+                <li>REST design <small>daily</small></li>
+                <li>Streamlit <small>2 yrs</small></li>
+                <li>Gradio <small>1 yr</small></li>
+              </ul>
+            </div>
+
+            <div class="skill-group" data-reveal style="--reveal-delay: 240ms">
+              <h3>Practice</h3>
+              <ul>
+                <li>Git <small>daily</small></li>
+                <li>Docker <small>working</small></li>
+                <li>Agile / SDLC <small>team</small></li>
+                <li>Performance <small>focus</small></li>
+                <li>Debugging <small>focus</small></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= Contact ================= -->
+      <section class="contact" id="contact">
+        <div class="contact__glow" aria-hidden="true"></div>
+        <div class="shell contact__inner">
+          <p class="eyebrow" data-reveal>05 — Contact</p>
+          <h2 class="contact__title" data-reveal>Let's build<br />something <em>real</em>.</h2>
+          <p class="section__lede" data-reveal>
+            I'm looking for a full stack role where the work ships. If that sounds like your team,
+            my inbox is open.
+          </p>
+
+          <a class="contact__mail" href="mailto:gargpratham71@gmail.com" data-reveal>
+            gargpratham71@gmail.com
+          </a>
+
+          <div class="contact__socials" data-reveal>
+            <a href="https://github.com/UniquePratham" target="_blank" rel="noopener">GitHub ↗</a>
+            <a href="https://www.linkedin.com/in/uniquepratham" target="_blank" rel="noopener">LinkedIn ↗</a>
+            <a href="https://x.com/unique_pratham" target="_blank" rel="noopener">X ↗</a>
+            <a href="https://www.instagram.com/unique_pratham" target="_blank" rel="noopener">Instagram ↗</a>
+            <a href="tel:+917896665564">+91 78966 65564</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="shell footer__inner">
+        <span>© <span id="year">2026</span> Pratham Agarwal</span>
+        <span>Built with Vite, Three.js and a lot of WebP</span>
+        <a href="#top">Back to top ↑</a>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
