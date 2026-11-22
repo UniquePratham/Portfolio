@@ -1,79 +1,82 @@
 /* ==========================================================================
-   Design tokens — "Paper & Ink"
-   A warm editorial ground with a single vermilion accent. The sequence is the
-   only dark plate, so the portrait reads as a full-bleed photograph.
+   Midnight Forest — design tokens
+   A dark mineral ground with one acid-green accent. The light surface is used
+   for exactly one section, so it reads as a change of material rather than a
+   theme toggle.
    ========================================================================== */
 
 :root {
-  /* Paper */
-  --paper: #f2efe8;
-  --paper-2: #e9e4d9;
-  --paper-3: #ded7c9;
+  /* Ground */
+  --forest-900: #101a16;
+  --forest-800: #182720;
+  --forest-700: #23372d;
+  --forest-600: #2e463a;
 
-  /* Ink */
-  --ink: #14120f;
-  --ink-2: #2a2620;
-  --ink-3: #4a443b;
-  --ink-4: #7d7568;
-  --ink-5: #a39a8b;
+  /* Mineral light */
+  --mineral-100: #e9e6dc;
+  --mineral-200: #dcd8cb;
+  --mineral-300: #c4bfae;
+
+  /* Text */
+  --text: #f1f0e8;
+  --text-muted: #aab5a9;
+  --text-faint: #7d8a80;
 
   /* Accent */
-  --accent: #c8401e;
-  --accent-2: #a83317;
-  --accent-soft: rgba(200, 64, 30, 0.1);
-
-  /* Dark plate (sequence only) */
-  --plate: #0a0908;
-  --plate-fg: #f2efe8;
+  --accent: #c4df73;
+  --accent-dim: #9cb457;
+  --accent-ink: #101a16;
+  --clay: #bc8063;
 
   /* Semantic */
-  --bg: var(--paper);
-  --fg: var(--ink);
-  --fg-muted: var(--ink-3);
-  --fg-faint: var(--ink-4);
-  --rule: rgba(20, 18, 15, 0.14);
-  --rule-strong: rgba(20, 18, 15, 0.28);
+  --bg: var(--forest-900);
+  --fg: var(--text);
+  --rule: rgba(241, 240, 232, 0.12);
+  --rule-strong: rgba(241, 240, 232, 0.24);
+  --rule-light: rgba(16, 26, 22, 0.16);
 
   /* Type */
-  --font-display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
-  --font-sans: 'Instrument Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Manrope Variable', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-  --step--2: clamp(0.68rem, 0.66rem + 0.1vw, 0.74rem);
-  --step--1: clamp(0.82rem, 0.79rem + 0.15vw, 0.92rem);
-  --step-0: clamp(1rem, 0.95rem + 0.25vw, 1.16rem);
-  --step-1: clamp(1.18rem, 1.1rem + 0.4vw, 1.44rem);
-  --step-2: clamp(1.4rem, 1.27rem + 0.65vw, 1.8rem);
-  --step-3: clamp(1.66rem, 1.46rem + 1vw, 2.25rem);
-  --step-4: clamp(1.97rem, 1.68rem + 1.45vw, 2.81rem);
-  --step-5: clamp(2.33rem, 1.93rem + 2vw, 3.51rem);
-  --step-6: clamp(2.76rem, 2.2rem + 2.8vw, 4.39rem);
-  --step-7: clamp(3.27rem, 2.5rem + 3.85vw, 5.49rem);
-  --step-8: clamp(3.87rem, 2.82rem + 5.25vw, 6.86rem);
+  /* Scale — 1.2 at small, 1.25 at large */
+  --step--2: clamp(0.69rem, 0.67rem + 0.1vw, 0.75rem);
+  --step--1: clamp(0.83rem, 0.8rem + 0.14vw, 0.92rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.13rem);
+  --step-1: clamp(1.2rem, 1.13rem + 0.34vw, 1.41rem);
+  --step-2: clamp(1.44rem, 1.33rem + 0.55vw, 1.76rem);
+  --step-3: clamp(1.73rem, 1.56rem + 0.85vw, 2.2rem);
+  --step-4: clamp(2.07rem, 1.82rem + 1.25vw, 2.75rem);
+  --step-5: clamp(2.49rem, 2.13rem + 1.8vw, 3.44rem);
+  --step-6: clamp(2.99rem, 2.48rem + 2.55vw, 4.3rem);
+  --step-7: clamp(3.58rem, 2.88rem + 3.5vw, 5.38rem);
+  --step-8: clamp(4.3rem, 3.34rem + 4.8vw, 6.72rem);
 
   /* Space */
-  --space-2xs: 0.25rem;
-  --space-xs: 0.5rem;
-  --space-s: 0.75rem;
-  --space-m: 1.25rem;
-  --space-l: 2rem;
-  --space-xl: 3.25rem;
-  --space-2xl: 5rem;
-  --space-3xl: 8rem;
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-s: 1rem;
+  --space-m: 1.5rem;
+  --space-l: 2.25rem;
+  --space-xl: 3.5rem;
+  --space-2xl: 5.5rem;
+  --space-3xl: 8.5rem;
 
   /* Layout */
-  --gutter: clamp(1.25rem, 4vw, 4.5rem);
-  --measure: 60ch;
-  --max-width: 1500px;
+  --gutter: clamp(1.25rem, 4.5vw, 5rem);
+  --measure: 62ch;
+  --max-width: 1480px;
 
   /* Motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-fast: 180ms;
-  --dur-base: 420ms;
-  --dur-slow: 900ms;
+  --dur-fast: 160ms;
+  --dur-base: 380ms;
+  --dur-slow: 800ms;
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 /* ==========================================================================
@@ -92,6 +95,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 6rem;
 }
 
 body {
@@ -105,17 +109,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-}
-
-/* Fine paper grain — keeps large flat areas from reading as a flat fill. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  font-variation-settings: 'wght' 400;
 }
 
 img,
@@ -128,7 +122,8 @@ canvas {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
   color: inherit;
 }
@@ -143,7 +138,7 @@ h2,
 h3,
 h4 {
   font-weight: 400;
-  line-height: 1.02;
+  line-height: 1.05;
   text-wrap: balance;
 }
 
@@ -153,12 +148,46 @@ p {
 
 ::selection {
   background: var(--accent);
-  color: var(--paper);
+  color: var(--accent-ink);
 }
 
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+  border-radius: 1px;
+}
+
+/* Programmatic focus (route change) must not draw a ring. */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
+/* The masthead sits over a light section on the person route. */
+body[data-surface='light'] .masthead {
+  color: var(--forest-900);
+}
+
+body[data-surface='light'] .masthead[data-scrolled='true'] {
+  background: rgba(233, 230, 220, 0.88);
+  border-bottom-color: rgba(16, 26, 22, 0.14);
+}
+
+body[data-surface='light'] .masthead__nav a {
+  color: #3d4a42;
+}
+
+body[data-surface='light'] .masthead__nav a:hover,
+body[data-surface='light'] .masthead__nav a[aria-current='true'] {
+  color: var(--forest-900);
+}
+
+body[data-surface='light'] .kbd-hint {
+  color: #5f6b62;
+  border-color: rgba(16, 26, 22, 0.2);
+}
+
+body[data-surface='light'] .menu-toggle span {
+  background: var(--forest-900);
 }
 
 /* ==========================================================================
@@ -172,39 +201,6 @@ p {
   padding-inline: var(--gutter);
 }
 
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--step--2);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--fg-faint);
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-s);
-}
-
-.eyebrow b {
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.display {
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.025em;
-}
-
-.italic {
-  font-style: italic;
-  color: var(--accent);
-}
-
-.rule {
-  height: 1px;
-  background: var(--rule);
-  border: 0;
-}
-
 .sr-only {
   position: absolute;
   width: 1px;
@@ -216,10 +212,36 @@ p {
   border: 0;
 }
 
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% -120%;
+  z-index: 300;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0.75rem 1.25rem;
+  font-size: var(--step--1);
+  font-weight: 600;
+  transition: translate var(--dur-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  translate: -50% 0;
+}
+
+/* Small technical label. Used for coordinates and metadata only. */
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Reveal-on-scroll, scoped to .js so content survives a script failure. */
 .js [data-reveal] {
   opacity: 0;
-  transform: translateY(1.25rem);
+  transform: translateY(1rem);
   transition:
     opacity var(--dur-slow) var(--ease-out),
     transform var(--dur-slow) var(--ease-out);
@@ -229,6 +251,115 @@ p {
 .js [data-reveal].is-visible {
   opacity: 1;
   transform: none;
+}
+
+/* ==========================================================================
+   Shared primitives
+   ========================================================================== */
+
+/* Section heading block. The rule above the title is structural: it marks the
+   start of a new area of the atlas. */
+.section-head {
+  display: grid;
+  gap: var(--space-s);
+  padding-top: var(--space-m);
+  border-top: 1px solid var(--rule);
+  margin-bottom: var(--space-xl);
+}
+
+.section-head__label {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.section-head__title {
+  font-family: var(--font-display);
+  font-size: var(--step-5);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  max-width: 24ch;
+}
+
+.section-head__lede {
+  color: var(--text-muted);
+  max-width: 58ch;
+  font-size: var(--step-0);
+  line-height: 1.65;
+}
+
+/* Text link with a rule that grows on hover. */
+.tlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: 2px;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.tlink:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.tlink svg {
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.tlink:hover svg {
+  transform: translate(2px, -2px);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.4rem;
+  font-size: var(--step--1);
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.btn--solid {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn--solid:hover {
+  background: var(--text);
+}
+
+.btn--outline {
+  border-color: var(--rule-strong);
+  color: var(--text);
+}
+
+.btn--outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Tag */
+.tag {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.02em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--rule);
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {

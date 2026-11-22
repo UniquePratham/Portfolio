@@ -14,3 +14,5 @@ node_modules/
 
 # Vercel local state (contains project tokens)
 .vercel/
+_shots
+_tools/*.mjs

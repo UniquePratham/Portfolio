@@ -3,625 +3,169 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pratham Agarwal — Full Stack Developer</title>
+    <title>Pratham Agarwal — Engineering Atlas</title>
     <meta
       name="description"
-      content="Pratham Agarwal — full stack developer in Kolkata. M.Tech CSE at IIT Kharagpur. Web platforms, applied AI and security tooling."
+      content="Pratham Agarwal — full stack developer in Kolkata. M.Tech CSE at IIT Kharagpur. Systems, applied AI and security work, with case studies and open-source contributions."
     />
-    <meta name="theme-color" content="#f2efe8" />
+    <meta name="theme-color" content="#101a16" />
     <link rel="canonical" href="https://uniquepratham-portfolio.web.app/" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Pratham Agarwal — Full Stack Developer" />
+    <meta property="og:title" content="Pratham Agarwal — Engineering Atlas" />
     <meta
       property="og:description"
-      content="Full stack developer building web platforms, applied AI and security tooling."
+      content="Systems, applied AI and security work — with case studies, open-source contributions and field notes."
     />
     <meta property="og:url" content="https://uniquepratham-portfolio.web.app/" />
+    <meta property="og:image" content="https://uniquepratham-portfolio.web.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pratham Agarwal — Engineering Atlas" />
+    <meta
+      name="twitter:description"
+      content="Systems, applied AI and security work — with case studies, open-source contributions and field notes."
+    />
+    <meta name="twitter:image" content="https://uniquepratham-portfolio.web.app/og.png" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" as="image" href="/frames/desktop/f0000.webp" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Pratham Agarwal",
+        "jobTitle": "Full Stack Developer",
+        "url": "https://uniquepratham-portfolio.web.app/",
+        "email": "mailto:gargpratham71@gmail.com",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Kolkata",
+          "addressRegion": "West Bengal",
+          "addressCountry": "IN"
+        },
+        "alumniOf": [
+          { "@type": "CollegeOrUniversity", "name": "IIT Kharagpur" },
+          { "@type": "CollegeOrUniversity", "name": "University of Calcutta" }
+        ],
+        "sameAs": [
+          "https://github.com/UniquePratham",
+          "https://www.linkedin.com/in/uniquepratham",
+          "https://x.com/unique_pratham"
+        ],
+        "knowsAbout": [
+          "Systems programming",
+          "Applied AI",
+          "Full stack development",
+          "Cyber security"
+        ]
+      }
+    </script>
   </head>
 
   <body>
     <script>
       document.documentElement.classList.add('js');
     </script>
-    <a class="sr-only" href="#main">Skip to content</a>
 
-    <div class="preloader" id="preloader" data-state="loading" aria-hidden="true">
-      <div class="preloader__inner">
-        <div class="preloader__mark">
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="masthead" id="masthead" data-scrolled="false" data-open="false" data-hidden="false">
+      <div class="shell masthead__inner">
+        <a class="monogram" href="#/" aria-label="Pratham Agarwal — home">
+          <svg class="monogram__mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+            <rect x="0.5" y="0.5" width="25" height="25" stroke="currentColor" stroke-opacity="0.35" />
+            <path d="M7 19V7h6.2a4 4 0 0 1 0 8H7" stroke="currentColor" stroke-width="1.4" />
+            <circle cx="19" cy="19" r="1.6" fill="#c4df73" />
+          </svg>
           <span>Pratham Agarwal</span>
-          <span class="preloader__count" id="preloader-count">0%</span>
-        </div>
-        <div class="preloader__track"><div class="preloader__fill" id="preloader-fill"></div></div>
-        <p class="preloader__label" id="preloader-label">Loading</p>
-      </div>
-    </div>
+        </a>
 
-    <header class="nav" id="nav" data-scrolled="false" data-open="false" data-hidden="false">
-      <div class="shell nav__inner">
-        <a class="nav__brand" href="#top">Pratham<span>.</span></a>
-
-        <nav class="nav__links" id="nav-links" aria-label="Primary">
-          <a href="#about">About</a>
-          <a href="#work">Work</a>
-          <a href="#open-source">Open source</a>
-          <a href="#skills">Skills</a>
-          <a href="#contact">Contact</a>
+        <nav class="masthead__nav" id="masthead-nav" aria-label="Primary">
+          <a href="#/">Atlas</a>
+          <a href="#/work">Work</a>
+          <a href="#/open-source">Open source</a>
+          <a href="#/notes">Notes</a>
+          <a href="#/person">About</a>
+          <a href="#/contact">Contact</a>
         </nav>
 
-        <a class="nav__cta" href="mailto:gargpratham71@gmail.com">Get in touch</a>
-
-        <button class="nav__toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
-          <span></span><span></span>
-        </button>
+        <div class="masthead__actions">
+          <button class="kbd-hint" type="button" data-open-palette aria-label="Open command palette">
+            <span>Search</span>
+            <kbd>⌘K</kbd>
+          </button>
+          <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Toggle menu" aria-expanded="false">
+            <span></span><span></span>
+          </button>
+        </div>
       </div>
     </header>
 
     <main id="main">
-      <!-- ================= Hero ================= -->
-      <section class="hero" id="top">
-        <div class="shell hero__grid">
-          <div class="hero__meta">
-            <span>Kolkata, India</span>
+      <!-- Entrance is static markup so the first paint needs no JavaScript. -->
+      <section class="entrance" id="entrance">
+        <div class="entrance__portrait">
+          <canvas id="entrance-canvas" aria-hidden="true"></canvas>
+        </div>
+        <div class="entrance__scrim" aria-hidden="true"></div>
+
+        <div class="shell entrance__grid">
+          <div class="entrance__coords">
+            <span><i></i>22.5726° N, 88.3639° E</span>
+            <span>Kolkata, West Bengal</span>
             <span>M.Tech CSE · IIT Kharagpur</span>
-            <span>Full stack · Applied AI · Security</span>
           </div>
 
-          <h1 class="hero__title">
-            I build end-to-end<br />
-            products that <em>ship</em>.
-          </h1>
+          <p class="entrance__name" role="heading" aria-level="1">Pratham<br />Agarwal</p>
 
-          <p class="hero__lede">
-            From a terminal emulator written in C to AI-powered security platforms. I care more
-            about whether it works in production than how clever the abstraction looks.
+          <p class="entrance__statement">
+            From low-level systems to applied AI, I build software that
+            <strong>works beyond the demo</strong>.
           </p>
 
-          <div class="hero__actions">
-            <a class="btn btn--primary" href="#work">
-              Selected work
-              <svg class="btn__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+          <div class="entrance__actions">
+            <a class="btn btn--solid" href="#/">
+              Enter the atlas
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </a>
-            <a class="btn btn--ghost" href="https://github.com/UniquePratham" target="_blank" rel="noopener">
-              GitHub
-            </a>
+            <a class="btn btn--outline" href="#/work">See the work</a>
           </div>
         </div>
 
-        <div class="hero__scroll" aria-hidden="true">Scroll</div>
+        <div class="entrance__scroll" aria-hidden="true">Scroll</div>
       </section>
 
-      <!-- ================= Sequence ================= -->
-      <section class="sequence" id="sequence" aria-label="Portrait sequence">
-        <div class="sequence__sticky">
-          <canvas class="sequence__canvas" id="sequence-canvas" aria-hidden="true"></canvas>
-          <div class="sequence__fade" aria-hidden="true"></div>
-
-          <div class="sequence__caption">
-            <p id="sequence-caption">Pratham Agarwal<br /><em>Kolkata, India</em></p>
-          </div>
-
-          <div class="sequence__progress" aria-hidden="true"><i id="sequence-progress"></i></div>
-        </div>
-      </section>
-
-      <!-- ================= About ================= -->
-      <section class="section" id="about">
-        <div class="shell">
-          <div class="section__head" data-reveal>
-            <p class="eyebrow"><b>01</b> About</p>
-            <h2 class="section__title">Engineer first,<br /><em>builder</em> always.</h2>
-          </div>
-
-          <div class="about__grid">
-            <div class="about__body" data-reveal>
-              <p>
-                I'm Pratham, a full stack developer based in Kolkata. I'm currently doing my
-                <strong>M.Tech in Computer Science at IIT Kharagpur</strong>, after a
-                <strong>B.Tech in Computer Science and Engineering at the University of
-                Calcutta</strong>.
-              </p>
-              <p>
-                I build end-to-end products — from a C terminal emulator to AI-powered security
-                platforms. Most of what's on this page is live and clickable, because a project
-                that only exists in a repository hasn't really been finished.
-              </p>
-              <p>
-                My focus sits across <strong>web platforms, applied AI and security</strong>. I
-                spend a lot of time on CTFs, which is where I learned to read systems rather than
-                just use them.
-              </p>
-            </div>
-
-            <dl class="about__facts" data-reveal style="--reveal-delay: 120ms">
-              <div class="fact">
-                <dt>Based in</dt>
-                <dd>Kolkata, West Bengal</dd>
-              </div>
-              <div class="fact">
-                <dt>Studying</dt>
-                <dd>M.Tech CSE · IIT Kharagpur</dd>
-              </div>
-              <div class="fact">
-                <dt>Graduated</dt>
-                <dd>B.Tech CSE · University of Calcutta</dd>
-              </div>
-              <div class="fact">
-                <dt>Focus</dt>
-                <dd>Web platforms · Applied AI · Security</dd>
-              </div>
-              <div class="fact">
-                <dt>Languages</dt>
-                <dd>TypeScript · Python · C · C++ · Java · Go</dd>
-              </div>
-              <div class="fact">
-                <dt>Currently</dt>
-                <dd>Shipping small, sharp tools</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= Work ================= -->
-      <section class="section" id="work">
-        <div class="shell">
-          <div class="section__head" data-reveal>
-            <p class="eyebrow"><b>02</b> Selected work</p>
-            <h2 class="section__title">Things I built<br />and <em>shipped</em>.</h2>
-            <p class="section__lede">
-              Six projects across systems, AI and product. Each one is live — the links go to the
-              running thing, not a screenshot.
-            </p>
-          </div>
-
-          <div class="work__list">
-            <article class="project" data-reveal>
-              <div class="project__media">
-                <img
-                  src="/work/terminator.webp"
-                  alt="Terminator project page showing a shell running in an X11 window"
-                  width="1600"
-                  height="1000"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="project__body">
-                <p class="project__index">01 — Systems</p>
-                <h3 class="project__title">Terminator</h3>
-                <p class="project__desc">
-                  A Linux terminal emulator and shell written from scratch in C. X11 UI,
-                  independent tabs, pipelines and job control, with thread and process execution
-                  modes. No PTY, no shell delegation.
-                </p>
-                <div class="project__tags">
-                  <span class="tag">C</span>
-                  <span class="tag">X11</span>
-                  <span class="tag">POSIX</span>
-                </div>
-                <div class="project__links">
-                  <a class="link-arrow" href="https://uniquepratham.github.io/Terminator/" target="_blank" rel="noopener">
-                    Project page
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                  <a class="link-arrow" href="https://github.com/UniquePratham/Terminator" target="_blank" rel="noopener">
-                    Source
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-
-            <article class="project" data-reveal>
-              <div class="project__media">
-                <img
-                  src="/work/locally-uncensored.webp"
-                  alt="Locally Uncensored landing page with a download panel for Windows"
-                  width="1600"
-                  height="1000"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="project__body">
-                <p class="project__index">02 — Applied AI</p>
-                <h3 class="project__title">Locally Uncensored</h3>
-                <p class="project__desc">
-                  A local-first AI desktop app — chat, agent mode, image and video generation.
-                  Auto-detects 12 local backends and ships as a single executable. No Docker, no
-                  cloud, no API keys.
-                </p>
-                <div class="project__tags">
-                  <span class="tag">TypeScript</span>
-                  <span class="tag">Ollama</span>
-                  <span class="tag">Desktop</span>
-                </div>
-                <div class="project__links">
-                  <a class="link-arrow" href="https://locallyuncensored.com" target="_blank" rel="noopener">
-                    Live
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                  <a class="link-arrow" href="https://github.com/PurpleDoubleD/locally-uncensored" target="_blank" rel="noopener">
-                    Source
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-
-            <article class="project" data-reveal>
-              <div class="project__media">
-                <img
-                  src="/work/tigergraph.webp"
-                  alt="TigerGraph fraud investigation console showing a case queue and an ego-net graph"
-                  width="1600"
-                  height="1000"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="project__body">
-                <p class="project__index">03 — Applied AI</p>
-                <h3 class="project__title">TigerGraph Fraud Platform</h3>
-                <p class="project__desc">
-                  Agentic fraud investigation: 2-hop graph traversal, GraphRAG evidence grounding,
-                  dual-stage next-best-action, and FinCEN SAR narrative generation. Built at HH Goa.
-                </p>
-                <div class="project__tags">
-                  <span class="tag">Python</span>
-                  <span class="tag">TigerGraph</span>
-                  <span class="tag">GraphRAG</span>
-                </div>
-                <div class="project__links">
-                  <a class="link-arrow" href="https://web-console-three.vercel.app/" target="_blank" rel="noopener">
-                    Live
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-
-            <article class="project" data-reveal>
-              <div class="project__media">
-                <img
-                  src="/work/revenueos.webp"
-                  alt="RevenueOS dashboard with revenue metrics, cash flow projection and a finance brief"
-                  width="1600"
-                  height="1000"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="project__body">
-                <p class="project__index">04 — Product</p>
-                <h3 class="project__title">RevenueOS</h3>
-                <p class="project__desc">
-                  An autonomous merchant revenue engine — agentic commerce plus defensive risk
-                  management, with Razorpay settlement reconciliation and a Monte Carlo cash-flow
-                  projection.
-                </p>
-                <div class="project__tags">
-                  <span class="tag">TypeScript</span>
-                  <span class="tag">Razorpay</span>
-                  <span class="tag">Fintech</span>
-                </div>
-                <div class="project__links">
-                  <a class="link-arrow" href="https://revenue-os-razorpay.vercel.app" target="_blank" rel="noopener">
-                    Live
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                  <a class="link-arrow" href="https://github.com/UniquePratham/RevenueOS" target="_blank" rel="noopener">
-                    Source
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-
-            <article class="project" data-reveal>
-              <div class="project__media">
-                <img
-                  src="/work/expenseflow.webp"
-                  alt="ExpenseFlow landing page with a recent expenses panel"
-                  width="1600"
-                  height="1000"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="project__body">
-                <p class="project__index">05 — Product</p>
-                <h3 class="project__title">ExpenseFlow</h3>
-                <p class="project__desc">
-                  Expense management with multi-level approvals, conditional workflow rules and OCR
-                  receipt scanning. Built for teams where the approval chain is the hard part.
-                </p>
-                <div class="project__tags">
-                  <span class="tag">TypeScript</span>
-                  <span class="tag">OCR</span>
-                  <span class="tag">Workflow</span>
-                </div>
-                <div class="project__links">
-                  <a class="link-arrow" href="https://expense-flow-project.vercel.app" target="_blank" rel="noopener">
-                    Live
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                  <a class="link-arrow" href="https://github.com/UniquePratham/ExpenseFlow" target="_blank" rel="noopener">
-                    Source
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-
-            <article class="project" data-reveal>
-              <div class="project__media">
-                <img
-                  src="/work/gpu_poor.webp"
-                  alt="GPU Poor calculator with model configuration and token generation panels"
-                  width="1600"
-                  height="1000"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="project__body">
-                <p class="project__index">06 — Developer tool</p>
-                <h3 class="project__title">gpu_poor</h3>
-                <p class="project__desc">
-                  Calculates token/s throughput and GPU memory requirements for any LLM, across
-                  llama.cpp, ggml, bnb and QLoRA quantisation. The tool I kept needing and kept not
-                  finding.
-                </p>
-                <div class="project__tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">LLM</span>
-                  <span class="tag">Quantisation</span>
-                </div>
-                <div class="project__links">
-                  <a class="link-arrow" href="https://uniquepratham.github.io/gpu_poor/" target="_blank" rel="noopener">
-                    Live
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                  <a class="link-arrow" href="https://github.com/UniquePratham/gpu_poor" target="_blank" rel="noopener">
-                    Source
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= Open source ================= -->
-      <section class="section" id="open-source">
-        <div class="shell">
-          <div class="section__head" data-reveal>
-            <p class="eyebrow"><b>03</b> Open source</p>
-            <h2 class="section__title">Work that lives<br />in other <em>repos</em>.</h2>
-            <p class="section__lede">
-              Merged pull requests into projects I don't own — upstream fixes, plus long-running
-              collaboration on team builds.
-            </p>
-          </div>
-
-          <div class="oss__grid">
-            <div data-reveal>
-              <div class="oss__stat">
-                <b>169</b>
-                <span>Merged pull requests</span>
-              </div>
-              <div class="oss__stat">
-                <b>18</b>
-                <span>Repositories contributed to</span>
-              </div>
-            </div>
-
-            <div data-reveal style="--reveal-delay: 100ms">
-              <h3 class="oss__heading">Upstream</h3>
-              <ul class="oss__list">
-                <li>
-                  <a class="oss__repo" href="https://github.com/ollama/ollama/pull/15726" target="_blank" rel="noopener">ollama/ollama</a>
-                  <span class="oss__what">Fixed the OpenClaw gateway launch timeout on Windows — localhost resolved to IPv6 before the 500 ms probe expired</span>
-                  <span class="oss__count">1 merged</span>
-                </li>
-                <li>
-                  <a class="oss__repo" href="https://github.com/PurpleDoubleD/locally-uncensored/pull/60" target="_blank" rel="noopener">PurpleDoubleD/locally-uncensored</a>
-                  <span class="oss__what">Header responsiveness and layout stability</span>
-                  <span class="oss__count">1 merged</span>
-                </li>
-              </ul>
-
-              <h3 class="oss__heading">Collaboration</h3>
-              <ul class="oss__list">
-                <li>
-                  <a class="oss__repo" href="https://github.com/subhro1530/urbanmotion" target="_blank" rel="noopener">subhro1530/urbanmotion</a>
-                  <span class="oss__what">Car rental platform — dashboard, booking flow, payments, UI fixes</span>
-                  <span class="oss__count">45 merged</span>
-                </li>
-                <li>
-                  <a class="oss__repo" href="https://github.com/UniquePratham/HealthPlus" target="_blank" rel="noopener">HealthPlus</a>
-                  <span class="oss__what">Health assistant front end and triage flows</span>
-                  <span class="oss__count">26 merged</span>
-                </li>
-                <li>
-                  <a class="oss__repo" href="https://github.com/subhro1530/VitalityAI" target="_blank" rel="noopener">subhro1530/VitalityAI</a>
-                  <span class="oss__what">IoT health monitoring interface and alerting</span>
-                  <span class="oss__count">15 merged</span>
-                </li>
-                <li>
-                  <a class="oss__repo" href="https://github.com/subhro1530/pangea-news" target="_blank" rel="noopener">subhro1530/pangea-news</a>
-                  <span class="oss__what">News reader — category routing and search</span>
-                  <span class="oss__count">10 merged</span>
-                </li>
-                <li>
-                  <a class="oss__repo" href="https://github.com/subhro1530/acns-v4" target="_blank" rel="noopener">subhro1530/acns-v4</a>
-                  <span class="oss__what">Next.js app with Stripe payments and email</span>
-                  <span class="oss__count">10 merged</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= Skills ================= -->
-      <section class="section" id="skills">
-        <div class="shell">
-          <div class="section__head" data-reveal>
-            <p class="eyebrow"><b>04</b> Toolkit</p>
-            <h2 class="section__title">What I reach<br />for, and <em>why</em>.</h2>
-          </div>
-
-          <div class="skills__grid">
-            <div class="skill-group" data-reveal>
-              <h3>Languages</h3>
-              <ul>
-                <li>TypeScript <small>primary</small></li>
-                <li>Python <small>primary</small></li>
-                <li>JavaScript <small>daily</small></li>
-                <li>C / C++ <small>systems</small></li>
-                <li>Go <small>services</small></li>
-                <li>Java <small>coursework</small></li>
-              </ul>
-            </div>
-
-            <div class="skill-group" data-reveal style="--reveal-delay: 80ms">
-              <h3>Front end</h3>
-              <ul>
-                <li>React <small>daily</small></li>
-                <li>Next.js <small>daily</small></li>
-                <li>Tailwind <small>daily</small></li>
-                <li>Three.js <small>3D</small></li>
-                <li>Framer Motion <small>motion</small></li>
-              </ul>
-            </div>
-
-            <div class="skill-group" data-reveal style="--reveal-delay: 160ms">
-              <h3>Back end &amp; data</h3>
-              <ul>
-                <li>Node / Express <small>services</small></li>
-                <li>FastAPI <small>services</small></li>
-                <li>MongoDB <small>data</small></li>
-                <li>Postgres <small>data</small></li>
-                <li>REST / SSE <small>interfaces</small></li>
-              </ul>
-            </div>
-
-            <div class="skill-group" data-reveal style="--reveal-delay: 240ms">
-              <h3>Tooling &amp; security</h3>
-              <ul>
-                <li>Git <small>daily</small></li>
-                <li>Docker <small>working</small></li>
-                <li>Linux <small>daily</small></li>
-                <li>CTF / pentest <small>practice</small></li>
-                <li>LLM tooling <small>applied</small></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= Recognition ================= -->
-      <section class="section" id="recognition">
-        <div class="shell">
-          <div class="section__head" data-reveal>
-            <p class="eyebrow"><b>05</b> Recognition</p>
-            <h2 class="section__title">Certifications<br />and <em>competitions</em>.</h2>
-          </div>
-
-          <ul class="recog__list" data-reveal>
-            <li>
-              <span class="recog__name">Oracle Agentic AI Foundations Associate</span>
-              <span class="recog__detail">Oracle certification</span>
-              <span class="recog__year">2026</span>
-            </li>
-            <li>
-              <span class="recog__name">IIT Madras — CyStar Winter School</span>
-              <span class="recog__detail">Shortlisted, Winter School on Decentralised Trust</span>
-              <span class="recog__year">2026</span>
-            </li>
-            <li>
-              <span class="recog__name">DEADFACE CTF</span>
-              <span class="recog__detail">Verified competitor, issued by Cyber Hacktics</span>
-              <span class="recog__year">2025 · 2026</span>
-            </li>
-            <li>
-              <span class="recog__name">boroCTF — 104th, Open Division</span>
-              <span class="recog__detail">20+ CTF events played, including VishwaCTF, CyberGame and CREST CTF</span>
-              <span class="recog__year">2025</span>
-            </li>
-            <li>
-              <span class="recog__name">Google AI Essentials · Foundations of Cybersecurity</span>
-              <span class="recog__detail">Google / Coursera courses completed</span>
-              <span class="recog__year">2025</span>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- ================= Contact ================= -->
-      <section class="contact" id="contact">
-        <div class="shell contact__inner">
-          <p class="eyebrow" data-reveal><b>06</b> Contact</p>
-          <h2 class="contact__title" data-reveal>Let's build<br />something <em>real</em>.</h2>
-          <p class="section__lede" data-reveal>
-            Open to collaborations, freelance work and interesting problems — especially at the
-            intersection of web platforms, applied AI and security.
-          </p>
-
-          <a class="contact__mail" href="mailto:gargpratham71@gmail.com" data-reveal>
-            gargpratham71@gmail.com
-          </a>
-
-          <div class="contact__socials" data-reveal>
-            <a href="https://github.com/UniquePratham" target="_blank" rel="noopener">GitHub ↗</a>
-            <a href="https://www.linkedin.com/in/uniquepratham" target="_blank" rel="noopener">LinkedIn ↗</a>
-            <a href="https://x.com/unique_pratham" target="_blank" rel="noopener">X ↗</a>
-            <a href="https://www.instagram.com/unique_pratham" target="_blank" rel="noopener">Instagram ↗</a>
-            <a href="tel:+917896665564">+91 78966 65564</a>
-          </div>
-        </div>
-      </section>
+      <!-- Routed views render here. -->
+      <div id="outlet"></div>
     </main>
 
     <footer class="footer">
       <div class="shell footer__inner">
         <span>© <span id="year">2026</span> Pratham Agarwal</span>
         <span>Kolkata, India</span>
-        <a href="#top">Back to top ↑</a>
+        <a href="#/">Atlas ↑</a>
       </div>
     </footer>
+
+    <div class="palette" id="palette" data-open="false" role="dialog" aria-modal="true" aria-label="Command palette">
+      <div class="palette__panel">
+        <input
+          class="palette__input"
+          id="palette-input"
+          type="text"
+          placeholder="Search destinations, projects, notes…"
+          aria-label="Search"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <ul class="palette__results" id="palette-results" role="listbox" aria-label="Results"></ul>
+      </div>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

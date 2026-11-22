@@ -1,110 +1,133 @@
-# Portfolio
+# Engineering Atlas
 
 Personal portfolio for **Pratham Agarwal** — full stack developer, Kolkata.
 
 Live at [uniquepratham-portfolio.web.app](https://uniquepratham-portfolio.web.app/)
 
-## What's in here
+## The idea
 
-A single-page site built around a scroll-scrubbed portrait sequence. Vite compiles
-TypeScript and CSS down to static files that Firebase Hosting serves.
+The site is an atlas rather than a scrolling page. Nine destinations sit on a
+topographic map, and each one opens a real part of the work: systems, applied AI,
+product, open source, security, field notes, archive, background, contact.
 
-| Section | Content |
-| --- | --- |
-| Hero | Positioning line, location, current study |
-| Sequence | 121 frames scrubbed by scroll, subject anchored to the bottom edge |
-| About | Background, focus areas, quick facts |
-| Work | Six shipped projects with live links |
-| Open source | 169 merged pull requests across 18 repositories |
-| Skills | Grouped by what the work actually needs |
-| Recognition | Certifications and CTF results |
-| Contact | Direct mail, phone, social links |
+The terrain is not decoration. `_tools/gen_contours.py` builds a height field from
+one peak per destination, contours it with marching squares, simplifies the result
+with Ramer–Douglas–Peucker, and writes `src/data/contours.json` — 14 levels, 23
+paths, 9.7 kB. The map is a real survey of the content.
 
 ## Stack
 
-- **Vite 6** + **TypeScript** (strict)
+- **Vite 6** + **TypeScript** (strict), no framework runtime
 - **Lenis** for smooth scrolling, disabled under `prefers-reduced-motion`
-- **Instrument Serif / Instrument Sans / JetBrains Mono**, self-hosted via Fontsource
-- **Firebase Hosting** for delivery
+- **Newsreader / Manrope / IBM Plex Mono**, self-hosted via Fontsource
+- **Firebase Hosting**
 
-No framework runtime. The initial JS payload is **7.6 kB gzipped**.
+Initial JS is **26 kB gzipped**; CSS is **6.5 kB gzipped**.
+
+## Structure
+
+```
+├── index.html              # shell, entrance, metadata, JSON-LD
+├── src/
+│   ├── main.ts             # wiring: router, atlas, palette, entrance
+│   ├── data/
+│   │   ├── content.ts      # all content, typed
+│   │   └── contours.json   # generated terrain
+│   ├── scripts/
+│   │   ├── router.ts       # hash router, focus management
+│   │   ├── views.ts        # one template per route
+│   │   ├── atlas.ts        # SVG terrain + markers
+│   │   ├── palette.ts      # ⌘K command palette
+│   │   └── entrance.ts     # skippable portrait scrub
+│   └── styles/
+│       ├── tokens.css      # palette, type scale, primitives
+│       └── layout.css      # components
+├── public/
+│   ├── frames/             # 121-frame portrait sequence
+│   ├── work/               # project screenshots
+│   ├── og.png              # social card
+│   ├── robots.txt
+│   └── sitemap.xml
+└── _tools/                 # generators (not shipped)
+```
+
+## Routes
+
+Every destination and case study is a real URL, so links are shareable and the
+back button works.
+
+| Route | Content |
+| --- | --- |
+| `#/` | Atlas |
+| `#/work` | Project index with discipline filters |
+| `#/work/:slug` | Case study — problem, approach, architecture, decisions |
+| `#/open-source` | Merged PRs with diff sizes, plus collaborations |
+| `#/security` | CTF record |
+| `#/notes`, `#/notes/:slug` | Field notes |
+| `#/person` | Education, philosophy, timeline (mineral-light surface) |
+| `#/capabilities` | Capability map, grouped by domain |
+| `#/archive` | Earlier work |
+| `#/contact` | Contact |
 
 ## Design
 
-Warm paper ground (`#f2efe8`) with a single vermilion accent (`#c8401e`). The
-sequence is the only dark plate, so the portrait reads as a full-bleed photograph
-rather than a component. The nav slides out while the plate is pinned and returns
-when it releases.
+**Midnight Forest.** Ground `#101A16`, secondary `#182720`, elevated `#23372D`,
+mineral light `#E9E6DC`, text `#F1F0E8`, muted `#AAB5A9`, accent `#C4DF73`,
+clay `#BC8063` used only for deletions and security markers.
 
-## Performance notes
-
-Frames are served in two tiers:
-
-| Tier | Dimensions | Total |
-| --- | --- | --- |
-| Desktop | 1554 × 1000 | 5.3 MB |
-| Mobile | 732 × 1000 (portrait crop) | 3.4 MB |
-
-Frames load coarse-to-fine — every 8th, then every 4th, then the rest — so the
-first paint happens after a handful of requests and the scrub never stalls on a
-missing frame. `paint()` falls back to the nearest decoded neighbour.
+The mineral-light surface appears exactly once, on the person route, so it reads
+as a change of material rather than a theme toggle. The masthead inverts over it.
 
 ## Accessibility
 
-- Single `<h1>`, ordered heading levels, `lang` set
-- Skip link to `#main`
-- Every image has meaningful `alt` text
-- `prefers-reduced-motion` disables Lenis, reveal transitions, and the scroll hint
-- Reveal animations are scoped to `.js`, so content stays visible without scripting
-- Focus-visible outlines on all interactive elements
+- Single `<h1>` per route; the entrance name is a `role="heading"` so it does not
+  compete with the routed heading
+- Skip link, visible focus rings, `:focus-visible` throughout
+- Atlas markers are focusable, labelled, and activate on Enter or Space
+- Command palette traps focus, closes on Escape, and never steals focus from a
+  route change
+- `prefers-reduced-motion` disables Lenis, reveals and the portrait scrub
+- Reveal animations scoped to `.js`, so content survives a script failure
+- Every image has `alt`, `width` and `height`
+
+## Performance
+
+The entrance fetches 12 priority frames spread across the sequence, then the rest
+at low concurrency. The portrait is a canvas, so there is no layout shift. The
+atlas is inline SVG with `vector-effect: non-scaling-stroke`, so it stays crisp at
+any size without extra requests.
 
 ## Local development
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm run build      # type-check + production build to dist/
-npm run preview    # serve the built output
+npm run build      # type-check + production build
+npm run preview
 ```
 
 ## Deploy
 
 ```bash
 npx firebase-tools login   # once
-npm run deploy             # build + firebase deploy --only hosting
+npm run deploy
 ```
 
-The Firebase project is `uniquepratham-portfolio` (see `.firebaserc`).
+Project: `uniquepratham-portfolio` (see `.firebaserc`).
 
-## Asset pipeline
+## Regenerating assets
 
-The source material — a 121-frame video sequence at 7608 × 2448 — is not
-committed. It was processed once into the files under `public/frames/`:
-
-- Cropped to the alpha union bbox `(1455, 125, 5066, 2448)`, then resized and
-  encoded to WebP. The mobile tier uses a narrower portrait crop centred on the
-  subject.
-- Project screenshots captured from the live deployments and re-encoded to WebP
-  at 1600 px wide.
-
-## Structure
-
+```bash
+python _tools/gen_contours.py   # terrain -> src/data/contours.json
+python _tools/gen_og.py         # social card -> public/og.png
 ```
-├── index.html            # markup and content
-├── src/
-│   ├── main.ts           # entry: fonts, styles, Lenis, module wiring
-│   ├── scripts/
-│   │   ├── sequence.ts   # scroll-scrubbed canvas + nav hiding
-│   │   └── ui.ts         # nav, reveals, scroll spy
-│   └── styles/
-│       ├── tokens.css    # design tokens, reset, utilities
-│       └── layout.css    # components and responsive rules
-├── public/
-│   ├── frames/           # desktop + mobile WebP tiers
-│   ├── work/             # project screenshots
-│   └── favicon.svg
-└── firebase.json
-```
+
+## Content provenance
+
+Every claim is traceable: the GitHub profile README, a merged pull request, a live
+deployment, or a repository. Contribution counts come from the GitHub search API
+(`author:UniquePratham type:pr is:merged -user:UniquePratham`) and are stamped with
+the date they were checked. No metrics are estimated.
 
 ## License
 
