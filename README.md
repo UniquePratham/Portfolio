@@ -6,33 +6,37 @@ Live at [uniquepratham-portfolio.web.app](https://uniquepratham-portfolio.web.ap
 
 ## What's in here
 
-A single-page site built around a scroll-scrubbed frame sequence and a real-time
-3D avatar. No page builder, no template, no framework runtime — Vite compiles
+A single-page site built around a scroll-scrubbed portrait sequence. Vite compiles
 TypeScript and CSS down to static files that Firebase Hosting serves.
 
-| Section | What it does |
+| Section | Content |
 | --- | --- |
-| Hero | Editorial type, bronze-on-obsidian palette sampled from the portrait |
-| Sequence | 121 frames decoded to `ImageBitmap` and painted to a canvas, scrubbed by scroll |
-| About | Resume-derived facts, no invented biography |
-| Work | Four shipped projects with live links and source |
-| Lab | Three.js avatar, Meshopt-compressed, three-point studio lighting |
+| Hero | Positioning line, location, current study |
+| Sequence | 121 frames scrubbed by scroll, subject anchored to the bottom edge |
+| About | Background, focus areas, quick facts |
+| Work | Six shipped projects with live links |
+| Open source | 169 merged pull requests across 18 repositories |
 | Skills | Grouped by what the work actually needs |
-| Contact | Direct mail, phone, and social links |
+| Recognition | Certifications and CTF results |
+| Contact | Direct mail, phone, social links |
 
 ## Stack
 
 - **Vite 6** + **TypeScript** (strict)
-- **Three.js** for the avatar, loaded lazily via dynamic `import()`
 - **Lenis** for smooth scrolling, disabled under `prefers-reduced-motion`
 - **Instrument Serif / Instrument Sans / JetBrains Mono**, self-hosted via Fontsource
 - **Firebase Hosting** for delivery
 
-## Performance notes
+No framework runtime. The initial JS payload is **7.6 kB gzipped**.
 
-The initial JS payload is **8.5 kB gzipped**. Three.js (130 kB gzipped) is only
-fetched when the Lab section comes within 600 px of the viewport, so it never
-competes with the frame sequence for bandwidth on first paint.
+## Design
+
+Warm paper ground (`#f2efe8`) with a single vermilion accent (`#c8401e`). The
+sequence is the only dark plate, so the portrait reads as a full-bleed photograph
+rather than a component. The nav slides out while the plate is pinned and returns
+when it releases.
+
+## Performance notes
 
 Frames are served in two tiers:
 
@@ -44,9 +48,6 @@ Frames are served in two tiers:
 Frames load coarse-to-fine — every 8th, then every 4th, then the rest — so the
 first paint happens after a handful of requests and the scrub never stalls on a
 missing frame. `paint()` falls back to the nearest decoded neighbour.
-
-The avatar ships at **1.0 MB**, down from 9.6 MB, via Meshopt geometry
-compression and WebP textures at 1024 px.
 
 ## Accessibility
 
@@ -77,15 +78,14 @@ The Firebase project is `uniquepratham-portfolio` (see `.firebaserc`).
 
 ## Asset pipeline
 
-The source material — a 121-frame video sequence at 7608 × 2448 and a 9.6 MB
-GLB — is not committed. It was processed once into the files under `public/`:
+The source material — a 121-frame video sequence at 7608 × 2448 — is not
+committed. It was processed once into the files under `public/frames/`:
 
-- Frames cropped to the alpha union bbox `(1455, 125, 5066, 2448)`, then
-  resized and encoded to WebP. The mobile tier uses a narrower portrait crop
-  centred on the subject.
-- Avatar run through `@gltf-transform/cli optimize` with `--compress meshopt
-  --texture-compress webp --texture-size 1024`.
-- Project screenshots re-encoded to WebP at 1600 px wide.
+- Cropped to the alpha union bbox `(1455, 125, 5066, 2448)`, then resized and
+  encoded to WebP. The mobile tier uses a narrower portrait crop centred on the
+  subject.
+- Project screenshots captured from the live deployments and re-encoded to WebP
+  at 1600 px wide.
 
 ## Structure
 
@@ -94,17 +94,15 @@ GLB — is not committed. It was processed once into the files under `public/`:
 ├── src/
 │   ├── main.ts           # entry: fonts, styles, Lenis, module wiring
 │   ├── scripts/
-│   │   ├── sequence.ts   # scroll-scrubbed canvas
-│   │   ├── avatar.ts     # Three.js viewer (lazy)
+│   │   ├── sequence.ts   # scroll-scrubbed canvas + nav hiding
 │   │   └── ui.ts         # nav, reveals, scroll spy
 │   └── styles/
 │       ├── tokens.css    # design tokens, reset, utilities
 │       └── layout.css    # components and responsive rules
 ├── public/
 │   ├── frames/           # desktop + mobile WebP tiers
-│   ├── models/avatar.glb
 │   ├── work/             # project screenshots
-│   └── Pratham_Agarwal.pdf
+│   └── favicon.svg
 └── firebase.json
 ```
 

@@ -5,12 +5,5 @@ export default defineConfig({
   build: {
     target: 'es2022',
     assetsInlineLimit: 2048,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          three: ['three'],
-        },
-      },
-    },
   },
 });

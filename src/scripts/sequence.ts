@@ -1,29 +1,24 @@
 /**
  * Scroll-scrubbed frame sequence.
  *
- * The 121 frames are decoded into ImageBitmaps and painted to a canvas whose
- * position is driven by scroll progress through a tall sticky section. Frames
- * are loaded in a coarse-to-fine order so the first paint happens early and the
- * scrub never stalls on a missing frame.
+ * Frames are decoded into ImageBitmaps and painted to a canvas whose position is
+ * driven by scroll progress through a tall sticky section. Frames load
+ * coarse-to-fine so the first paint happens early and the scrub never stalls.
+ *
+ * The subject is anchored to the bottom edge of the viewport, so the figure
+ * rises out of the page rather than floating in the middle of a letterbox.
  */
 
 interface SequenceOptions {
   canvas: HTMLCanvasElement;
   section: HTMLElement;
   progressBar: HTMLElement;
-  currentLabel: HTMLElement;
-  caption: HTMLElement;
+  nav: HTMLElement | null;
   onProgress?: (loaded: number, total: number) => void;
   onFirstFrame?: () => void;
 }
 
 const TOTAL_FRAMES = 121;
-
-const CAPTIONS: Array<{ at: number; html: string }> = [
-  { at: 0, html: 'Most portfolios show a picture.<br />This one <em>moves</em>.' },
-  { at: 0.34, html: 'Every frame is a decision —<br />about <em>light</em>, about weight.' },
-  { at: 0.68, html: 'Scroll is the only<br />input that <em>matters</em>.' },
-];
 
 function framePath(tier: 'desktop' | 'mobile', index: number): string {
   return `/frames/${tier}/f${String(index).padStart(4, '0')}.webp`;
@@ -49,7 +44,7 @@ function loadOrder(total: number): number[] {
 }
 
 export function initSequence(options: SequenceOptions): { destroy: () => void } {
-  const { canvas, section, progressBar, currentLabel, caption } = options;
+  const { canvas, section, progressBar, nav } = options;
   const context = canvas.getContext('2d', { alpha: true });
   if (!context) return { destroy: () => {} };
   const ctx: CanvasRenderingContext2D = context;
@@ -65,6 +60,7 @@ export function initSequence(options: SequenceOptions): { destroy: () => void } 
   let targetFrame = 0;
   let rafId = 0;
   let destroyed = false;
+  let navHidden = false;
 
   /* --- Sizing ---------------------------------------------------------- */
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -101,14 +97,14 @@ export function initSequence(options: SequenceOptions): { destroy: () => void } 
     if (!bitmap) return;
 
     const { width, height } = canvas;
-    // Phones get a portrait crop, so fill the frame; desktop keeps the full
-    // panorama visible with contain.
-    const fit = tier === 'mobile' ? Math.max : Math.min;
-    const scale = fit(width / bitmap.width, height / bitmap.height);
+
+    // Fill the frame and pin the subject to the bottom edge, so the figure
+    // rises out of the page instead of floating in a letterbox.
+    const scale = Math.max(width / bitmap.width, height / bitmap.height);
     const w = bitmap.width * scale;
     const h = bitmap.height * scale;
     const x = (width - w) / 2;
-    const y = (height - h) / 2;
+    const y = height - h;
 
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(bitmap, x, y, w, h);
@@ -129,17 +125,6 @@ export function initSequence(options: SequenceOptions): { destroy: () => void } 
     return Math.min(1, Math.max(0, raw));
   }
 
-  function updateCaption(p: number) {
-    let active = CAPTIONS[0];
-    for (const entry of CAPTIONS) {
-      if (p >= entry.at) active = entry;
-    }
-    if (active && caption.dataset.active !== String(active.at)) {
-      caption.dataset.active = String(active.at);
-      caption.innerHTML = active.html;
-    }
-  }
-
   function tick() {
     if (destroyed) return;
 
@@ -147,10 +132,15 @@ export function initSequence(options: SequenceOptions): { destroy: () => void } 
     targetFrame = Math.round(p * (TOTAL_FRAMES - 1));
 
     paint(targetFrame);
-
     progressBar.style.transform = `scaleX(${p})`;
-    currentLabel.textContent = String(targetFrame + 1).padStart(3, '0');
-    updateCaption(p);
+
+    // The nav leaves while the plate is pinned, and returns once it releases.
+    const rect = section.getBoundingClientRect();
+    const inPlate = rect.top <= 0 && rect.bottom >= window.innerHeight;
+    if (inPlate !== navHidden) {
+      navHidden = inPlate;
+      nav?.setAttribute('data-hidden', String(inPlate));
+    }
 
     rafId = requestAnimationFrame(tick);
   }

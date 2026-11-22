@@ -44,15 +44,13 @@ let sequenceReady = false;
 function dismissPreloader() {
   if (!sequenceReady) return;
   preloader?.setAttribute('data-state', 'done');
-  document.body.classList.add('is-ready');
 }
 
-const sequence = initSequence({
+initSequence({
   canvas: document.getElementById('sequence-canvas') as HTMLCanvasElement,
   section: document.getElementById('sequence') as HTMLElement,
   progressBar: document.getElementById('sequence-progress') as HTMLElement,
-  currentLabel: document.getElementById('sequence-current') as HTMLElement,
-  caption: document.getElementById('sequence-caption') as HTMLElement,
+  nav: document.getElementById('nav'),
   onProgress(loaded, total) {
     const pct = Math.round((loaded / total) * 100);
     if (preloaderFill) preloaderFill.style.transform = `scaleX(${loaded / total})`;
@@ -64,27 +62,6 @@ const sequence = initSequence({
     dismissPreloader();
   },
 });
-
-void sequence;
-
-/* Three.js is ~520 kB, so it is imported only when the Lab section nears the
-   viewport. The frame sequence gets the bandwidth first. */
-const labStage = document.getElementById('lab-stage');
-const labFallback = document.getElementById('lab-fallback');
-
-if (labStage && labFallback) {
-  const labObserver = new IntersectionObserver(
-    (entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return;
-      labObserver.disconnect();
-      void import('./scripts/avatar').then(({ initAvatar }) => {
-        initAvatar({ stage: labStage, fallback: labFallback });
-      });
-    },
-    { rootMargin: '600px 0px' },
-  );
-  labObserver.observe(labStage);
-}
 
 // Safety net: never trap the visitor behind the preloader.
 window.setTimeout(() => {

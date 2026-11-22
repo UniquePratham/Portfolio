@@ -13,12 +13,9 @@
     "@fontsource/instrument-sans": "^5.1.1",
     "@fontsource/instrument-serif": "^5.1.1",
     "@fontsource/jetbrains-mono": "^5.1.1",
-    "lenis": "^1.1.18",
-    "meshoptimizer": "^0.21.0",
-    "three": "^0.171.0"
+    "lenis": "^1.1.18"
   },
   "devDependencies": {
-    "@types/three": "^0.171.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.5"
   },
