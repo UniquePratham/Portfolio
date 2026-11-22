@@ -662,6 +662,21 @@
   border-top: 1px solid var(--rule);
 }
 
+.oss__heading {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 500;
+  margin-top: var(--space-l);
+  margin-bottom: var(--space-s);
+}
+
+.oss__heading:first-child {
+  margin-top: 0;
+}
+
 .oss__list li {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

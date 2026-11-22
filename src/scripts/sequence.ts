@@ -98,9 +98,17 @@ export function initSequence(options: SequenceOptions): { destroy: () => void } 
 
     const { width, height } = canvas;
 
-    // Fill the frame and pin the subject to the bottom edge, so the figure
-    // rises out of the page instead of floating in a letterbox.
-    const scale = Math.max(width / bitmap.width, height / bitmap.height);
+    // The subject's head sits at the very top of the crop, so vertical cropping
+    // cuts it off. Cover only when it crops horizontally (viewport narrower than
+    // the frame); otherwise fit the height and let the black background blend
+    // into the plate. Phones use the portrait crop, which is tall enough to fill.
+    const viewportAspect = width / height;
+    const frameAspect = bitmap.width / bitmap.height;
+    const scale =
+      viewportAspect <= frameAspect
+        ? Math.max(width / bitmap.width, height / bitmap.height)
+        : Math.min(width / bitmap.width, height / bitmap.height);
+
     const w = bitmap.width * scale;
     const h = bitmap.height * scale;
     const x = (width - w) / 2;
