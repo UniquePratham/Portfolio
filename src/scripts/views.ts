@@ -20,7 +20,17 @@ import {
 
 const arrow = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 9L9 3M9 3H4M9 3v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-const back = `<a class="dest__back" href="#/">← Atlas</a>`;
+/** Breadcrumb trail. The last crumb is the current page and is not a link. */
+function crumbs(trail: Array<{ label: string; href?: string }>): string {
+  const parts = trail.map((c, i) => {
+    const last = i === trail.length - 1;
+    if (last || !c.href) {
+      return `<span aria-current="page">${esc(c.label)}</span>`;
+    }
+    return `<a href="${esc(c.href)}">${esc(c.label)}</a>`;
+  });
+  return `<nav class="crumbs" aria-label="Breadcrumb">${parts.join('<i aria-hidden="true">/</i>')}</nav>`;
+}
 
 function esc(value: string): string {
   return value
@@ -119,7 +129,7 @@ export function renderWork(filter?: string): string {
   const rows = shown
     .map(
       (p) => `
-      <a class="project-row" href="#/work/${p.slug}">
+      <a class="project-row" href="#/work/${p.slug}" data-discipline="${p.discipline}">
         <div>
           <h2 class="project-row__title">${esc(p.title)} <small>${DISCIPLINE_LABEL[p.discipline]}</small></h2>
           <div class="project-row__meta">${tags(p.stack.slice(0, 4))}</div>
@@ -134,7 +144,7 @@ export function renderWork(filter?: string): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Work" }])}
         <div class="dest__head">
           <p class="section-head__label">Selected work</p>
           <h1 class="dest__title">Six projects, six problems</h1>
@@ -146,6 +156,7 @@ export function renderWork(filter?: string): string {
 
         <div class="filters" role="group" aria-label="Filter projects by discipline">${filters}</div>
         <div class="project-index">${rows}</div>
+        <p class="project-empty" data-empty hidden>No projects in this discipline.</p>
       </div>
     </section>`;
 }
@@ -155,8 +166,12 @@ export function renderWork(filter?: string): string {
    ------------------------------------------------------------------------- */
 
 export function renderCase(slug: string): string {
-  const p = PROJECTS.find((x) => x.slug === slug);
+  const index = PROJECTS.findIndex((x) => x.slug === slug);
+  const p = PROJECTS[index];
   if (!p) return renderNotFound();
+
+  const prev = index > 0 ? PROJECTS[index - 1] : undefined;
+  const next = index < PROJECTS.length - 1 ? PROJECTS[index + 1] : undefined;
 
   const media = p.image
     ? `<figure class="case__media">
@@ -190,7 +205,11 @@ export function renderCase(slug: string): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([
+          { label: 'Atlas', href: '#/' },
+          { label: 'Work', href: '#/work' },
+          { label: p.title },
+        ])}
         <div class="case">
           <div class="case__hero">
             <div class="dest__head" style="margin-bottom:0">
@@ -229,6 +248,26 @@ export function renderCase(slug: string): string {
               ${p.outcomes.map((o) => `<li><span>${esc(o)}</span></li>`).join('')}
             </ul>
           </div>
+
+          <nav class="case__nav" aria-label="Project navigation">
+            ${
+              prev
+                ? `<a class="case__nav-link" href="#/work/${prev.slug}">
+                     <span class="case__nav-dir">Previous</span>
+                     <span class="case__nav-title">${esc(prev.title)}</span>
+                   </a>`
+                : '<span></span>'
+            }
+            <a class="case__nav-index" href="#/work">All projects</a>
+            ${
+              next
+                ? `<a class="case__nav-link case__nav-link--next" href="#/work/${next.slug}">
+                     <span class="case__nav-dir">Next</span>
+                     <span class="case__nav-title">${esc(next.title)}</span>
+                   </a>`
+                : '<span></span>'
+            }
+          </nav>
         </div>
       </div>
     </section>`;
@@ -279,7 +318,7 @@ export function renderOpenSource(): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Open source" }])}
         <div class="dest__head">
           <p class="section-head__label">Open-source observatory</p>
           <h1 class="dest__title">Work in repositories I don’t own</h1>
@@ -323,7 +362,7 @@ export function renderSecurity(): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Security" }])}
         <div class="dest__head">
           <p class="section-head__label">Security range</p>
           <h1 class="dest__title">Twenty-plus events, one habit</h1>
@@ -376,7 +415,7 @@ export function renderNotes(): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Field notes" }])}
         <div class="dest__head">
           <p class="section-head__label">Field notes</p>
           <h1 class="dest__title">What building these taught me</h1>
@@ -397,7 +436,7 @@ export function renderNote(slug: string): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Field notes", href: "#/notes" }, { label: note.title }])}
         <div class="dest__head">
           <p class="section-head__label">${esc(note.category)} · ${esc(note.date)}</p>
           <h1 class="dest__title">${esc(note.title)}</h1>
@@ -437,7 +476,7 @@ export function renderPerson(): string {
   return `
     <section class="dest mineral">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "About" }])}
         <div class="dest__head">
           <p class="section-head__label">The person</p>
           <h1 class="dest__title">How I got here</h1>
@@ -477,7 +516,7 @@ export function renderCapabilities(): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Capabilities" }])}
         <div class="dest__head">
           <p class="section-head__label">Capability map</p>
           <h1 class="dest__title">What I actually use</h1>
@@ -510,7 +549,7 @@ export function renderArchive(): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Archive" }])}
         <div class="dest__head">
           <p class="section-head__label">Archive</p>
           <h1 class="dest__title">Earlier work</h1>
@@ -543,7 +582,7 @@ export function renderContact(): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Contact" }])}
         <div class="dest__head">
           <p class="section-head__label">Contact station</p>
           <h1 class="dest__title">Let’s build something real</h1>
@@ -590,7 +629,7 @@ export function renderDiscipline(discipline: Discipline): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: label }])}
         <div class="dest__head">
           <p class="section-head__label">${esc(label)}</p>
           <h1 class="dest__title">${esc(label)}</h1>
@@ -624,7 +663,7 @@ export function renderNotFound(): string {
   return `
     <section class="dest">
       <div class="shell">
-        ${back}
+        ${crumbs([{ label: "Atlas", href: "#/" }, { label: "Not found" }])}
         <div class="dest__head">
           <p class="section-head__label">404</p>
           <h1 class="dest__title">That marker isn’t on the map</h1>

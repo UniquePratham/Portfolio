@@ -105,39 +105,45 @@
     </header>
 
     <main id="main">
-      <!-- Entrance is static markup so the first paint needs no JavaScript. -->
+      <!-- Entrance is static markup so the first paint needs no JavaScript.
+           The section is taller than the viewport so the portrait can stay
+           pinned while the scrub advances. -->
       <section class="entrance" id="entrance">
-        <div class="entrance__portrait">
-          <canvas id="entrance-canvas" aria-hidden="true"></canvas>
-        </div>
-        <div class="entrance__scrim" aria-hidden="true"></div>
+        <div class="entrance__sticky">
+          <div class="shell entrance__layout">
+            <div class="entrance__grid">
+              <div class="entrance__coords">
+                <span><i></i>22.5726° N, 88.3639° E</span>
+                <span>Kolkata, West Bengal</span>
+                <span>M.Tech CSE · IIT Kharagpur</span>
+              </div>
 
-        <div class="shell entrance__grid">
-          <div class="entrance__coords">
-            <span><i></i>22.5726° N, 88.3639° E</span>
-            <span>Kolkata, West Bengal</span>
-            <span>M.Tech CSE · IIT Kharagpur</span>
+              <p class="entrance__name" role="heading" aria-level="1">Pratham<br />Agarwal</p>
+
+              <p class="entrance__statement">
+                From low-level systems to applied AI, I build software that
+                <strong>works beyond the demo</strong>.
+              </p>
+
+              <div class="entrance__actions">
+                <a class="btn btn--solid" href="#atlas" data-scroll-to-atlas>
+                  Enter the atlas
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </a>
+                <a class="btn btn--outline" href="#/work">See the work</a>
+              </div>
+            </div>
+
+            <div class="entrance__portrait">
+              <canvas id="entrance-canvas" aria-hidden="true"></canvas>
+            </div>
           </div>
 
-          <p class="entrance__name" role="heading" aria-level="1">Pratham<br />Agarwal</p>
-
-          <p class="entrance__statement">
-            From low-level systems to applied AI, I build software that
-            <strong>works beyond the demo</strong>.
-          </p>
-
-          <div class="entrance__actions">
-            <a class="btn btn--solid" href="#/">
-              Enter the atlas
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </a>
-            <a class="btn btn--outline" href="#/work">See the work</a>
-          </div>
+          <div class="entrance__scrim" aria-hidden="true"></div>
+          <div class="entrance__scroll" aria-hidden="true">Scroll</div>
         </div>
-
-        <div class="entrance__scroll" aria-hidden="true">Scroll</div>
       </section>
 
       <!-- Routed views render here. -->

@@ -34,8 +34,19 @@ const ROUTE = ['systems', 'intelligence', 'product', 'open-source', 'contact'];
 export function initAtlas({ svg, readout, onNavigate }: AtlasOptions): void {
   const { width, height } = contours;
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-  svg.setAttribute('role', 'presentation');
-  svg.setAttribute('aria-hidden', 'true');
+  // The SVG is the interactive map, so it is exposed to assistive technology
+  // with a title and description. Its markers are real focusable controls.
+  svg.setAttribute('role', 'group');
+  svg.setAttribute('aria-label', 'Engineering atlas map');
+
+  const title = el('title');
+  title.textContent = 'Engineering atlas';
+  svg.appendChild(title);
+
+  const desc = el('desc');
+  desc.textContent =
+    'A topographic map with nine destinations. Each marker is a button; use Tab to move between them and Enter to open one.';
+  svg.appendChild(desc);
 
   /* --- Survey grid ------------------------------------------------------ */
   const grid = el('g', { class: 'atlas__grid' });
@@ -129,6 +140,16 @@ export function initAtlas({ svg, readout, onNavigate }: AtlasOptions): void {
 
   /* --- Interaction ------------------------------------------------------ */
   let activeId: string | null = null;
+  const cleanups: Array<() => void> = [];
+
+  function on<K extends keyof HTMLElementEventMap>(
+    target: EventTarget,
+    type: K | string,
+    handler: EventListener,
+  ): void {
+    target.addEventListener(type, handler);
+    cleanups.push(() => target.removeEventListener(type, handler));
+  }
 
   function showReadout(dest: AtlasDestination, target: SVGGElement) {
     readout.innerHTML = '';
@@ -206,27 +227,28 @@ export function initAtlas({ svg, readout, onNavigate }: AtlasOptions): void {
     const dest = DESTINATIONS.find((d) => d.id === id);
     if (!dest) continue;
 
-    node.addEventListener('pointerenter', () => {
+    on(node, 'pointerenter', () => {
       setActive(id);
       showReadout(dest, node);
     });
-    node.addEventListener('pointerleave', () => {
+    on(node, 'pointerleave', () => {
       setActive(null);
       hideReadout();
     });
-    node.addEventListener('focus', () => {
+    on(node, 'focus', () => {
       setActive(id);
       showReadout(dest, node);
     });
-    node.addEventListener('blur', () => {
+    on(node, 'blur', () => {
       setActive(null);
       hideReadout();
     });
 
     const activate = () => onNavigate(dest.href);
-    node.addEventListener('click', activate);
-    node.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+    on(node, 'click', activate);
+    on(node, 'keydown', (event) => {
+      const key = (event as KeyboardEvent).key;
+      if (key === 'Enter' || key === ' ') {
         event.preventDefault();
         activate();
       }
@@ -234,8 +256,18 @@ export function initAtlas({ svg, readout, onNavigate }: AtlasOptions): void {
   }
 
   // Hide the readout when the pointer leaves the whole frame.
-  svg.parentElement?.addEventListener('pointerleave', () => {
-    setActive(null);
-    hideReadout();
-  });
+  const frame = svg.parentElement;
+  if (frame) {
+    on(frame, 'pointerleave', () => {
+      setActive(null);
+      hideReadout();
+    });
+  }
+
+  // Expose a teardown so repeated visits to the atlas cannot accumulate
+  // listeners on the shared frame element.
+  (svg as SVGSVGElement & { __cleanup?: () => void }).__cleanup = () => {
+    cleanups.forEach((fn) => fn());
+    cleanups.length = 0;
+  };
 }

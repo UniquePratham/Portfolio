@@ -15,6 +15,34 @@ one peak per destination, contours it with marching squares, simplifies the resu
 with Ramer–Douglas–Peucker, and writes `src/data/contours.json` — 14 levels, 23
 paths, 9.7 kB. The map is a real survey of the content.
 
+## SPA architecture
+
+One document, one application shell, one entry point. Only `#outlet` changes.
+
+**Persistent across navigation:** masthead, monogram, command palette, footer,
+Lenis instance, reveal observer, entrance portrait.
+
+**Route lifecycle** (`src/scripts/router.ts`):
+
+1. Save the outgoing scroll position.
+2. Run the previous route's cleanup function.
+3. Match the new route.
+4. Cross-fade the outlet out (130 ms, skipped under `prefers-reduced-motion`).
+5. Render, set title + description + OG tags.
+6. Restore scroll (remembered for revisited routes, top otherwise).
+7. Focus the new `h1` unless a dialog is open.
+8. Run the new route's `mount`, which may return a cleanup.
+
+`mount` is where route-specific listeners live. The atlas returns a cleanup that
+removes every listener it added, so repeated visits cannot accumulate them.
+
+**History:** real hash entries, so Back and Forward work. Navigating to the route
+you are already on scrolls to top instead of pushing a duplicate entry. Scroll
+positions are kept in `sessionStorage` per path.
+
+**Invalid routes** render a designed 404 inside the shell with a return link —
+they are not silently redirected.
+
 ## Stack
 
 - **Vite 6** + **TypeScript** (strict), no framework runtime
@@ -22,7 +50,7 @@ paths, 9.7 kB. The map is a real survey of the content.
 - **Newsreader / Manrope / IBM Plex Mono**, self-hosted via Fontsource
 - **Firebase Hosting**
 
-Initial JS is **26 kB gzipped**; CSS is **6.5 kB gzipped**.
+Initial JS is **28 kB gzipped**; CSS is **6.9 kB gzipped**.
 
 ## Structure
 
@@ -83,19 +111,27 @@ as a change of material rather than a theme toggle. The masthead inverts over it
 - Single `<h1>` per route; the entrance name is a `role="heading"` so it does not
   compete with the routed heading
 - Skip link, visible focus rings, `:focus-visible` throughout
-- Atlas markers are focusable, labelled, and activate on Enter or Space
+- The atlas SVG is exposed with `role="group"`, a `<title>` and a `<desc>`; its
+  markers are focusable buttons that activate on Enter or Space. No focusable
+  control sits inside an `aria-hidden` element.
+- Breadcrumbs on every internal view, with `aria-current="page"` on the last crumb
 - Command palette traps focus, closes on Escape, and never steals focus from a
   route change
-- `prefers-reduced-motion` disables Lenis, reveals and the portrait scrub
+- `prefers-reduced-motion` disables Lenis, route transitions, reveals and the
+  portrait scrub
 - Reveal animations scoped to `.js`, so content survives a script failure
 - Every image has `alt`, `width` and `height`
 
 ## Performance
 
 The entrance fetches 12 priority frames spread across the sequence, then the rest
-at low concurrency. The portrait is a canvas, so there is no layout shift. The
-atlas is inline SVG with `vector-effect: non-scaling-stroke`, so it stays crisp at
-any size without extra requests.
+at low concurrency. The portrait is a canvas in its own grid column, so there is
+no layout shift and no text can overlap it. The atlas is inline SVG with
+`vector-effect: non-scaling-stroke`, so it stays crisp at any size without extra
+requests.
+
+One Lenis instance, one reveal observer, one animation loop. Route changes do not
+create new ones.
 
 ## Local development
 

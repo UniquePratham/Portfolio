@@ -41,7 +41,6 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
     current = -1;
     paint(target, true);
   }
-
   function paint(index: number, force = false) {
     if (index === current && !force) return;
 
@@ -64,8 +63,8 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
 
     const { width, height } = canvas;
     // Fit the height and anchor to the bottom: the head sits at the top of the
-    // crop, so vertical cropping would remove it. The frame's black background
-    // blends into the page.
+    // crop, so vertical cropping would remove it. The portrait has its own
+    // column, so no text can overlap it.
     const scale = Math.min(width / bitmap.width, height / bitmap.height);
     const w = bitmap.width * scale;
     const h = bitmap.height * scale;
@@ -79,9 +78,10 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
 
   function progress(): number {
     const rect = section.getBoundingClientRect();
-    const span = rect.height;
-    if (span <= 0) return 0;
-    return Math.min(1, Math.max(0, -rect.top / span));
+    // The scrub advances over the distance the section travels while pinned.
+    const scrollable = rect.height - window.innerHeight;
+    if (scrollable <= 0) return 0;
+    return Math.min(1, Math.max(0, -rect.top / scrollable));
   }
 
   function tick() {

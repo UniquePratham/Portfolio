@@ -126,12 +126,10 @@
 
 .entrance {
   position: relative;
-  min-height: 100svh;
-  display: grid;
-  align-content: end;
-  padding-block: 7rem var(--space-xl);
-  overflow: hidden;
-  isolation: isolate;
+  /* Taller than the viewport so the portrait can stay pinned while the scrub
+     advances, then release into the atlas. */
+  height: 190svh;
+  background: var(--forest-900);
 }
 
 /* The entrance belongs to the home route only. */
@@ -139,36 +137,60 @@
   display: none;
 }
 
-/* The portrait sits behind the type, anchored to the bottom edge. */
-.entrance__portrait {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
+.entrance__sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
   display: grid;
-  place-items: end center;
+  align-content: end;
+  padding-block: 7rem var(--space-xl);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Two columns on desktop: type on the left, portrait on the right. The
+   portrait is a grid item, not an overlay, so text can never sit on top of it. */
+.entrance__layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-l);
+  align-items: end;
+  height: 100%;
+}
+
+/* The portrait column. */
+.entrance__portrait {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 0;
+  height: 100%;
 }
 
 .entrance__portrait canvas {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: bottom center;
+  display: block;
 }
 
-/* A vertical scrim so the type stays legible over the portrait. */
+/* A soft edge where the portrait meets the page. No text sits over it. */
 .entrance__scrim {
   position: absolute;
   inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(to top, var(--forest-900) 0%, rgba(16, 26, 22, 0.92) 22%, rgba(16, 26, 22, 0.35) 52%, rgba(16, 26, 22, 0.7) 100%),
-    linear-gradient(to right, var(--forest-900) 0%, transparent 45%);
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--forest-900) 0%, transparent 22%);
 }
 
 .entrance__grid {
   position: relative;
+  z-index: 2;
   display: grid;
   gap: var(--space-m);
+  align-content: end;
+  padding-bottom: var(--space-m);
 }
 
 .entrance__coords {
@@ -180,6 +202,7 @@
   letter-spacing: 0.06em;
   color: var(--text-faint);
   padding-bottom: var(--space-s);
+  /* The rule belongs to the text column, not the full page width. */
   border-bottom: 1px solid var(--rule);
 }
 
@@ -503,6 +526,116 @@
   color: var(--text-muted);
 }
 
+/* Breadcrumb */
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-bottom: var(--space-m);
+}
+
+.crumbs a {
+  color: var(--text-faint);
+  transition: color var(--dur-fast);
+}
+
+.crumbs a:hover {
+  color: var(--accent);
+}
+
+.crumbs i {
+  font-style: normal;
+  opacity: 0.45;
+}
+
+.crumbs [aria-current='page'] {
+  color: var(--text-muted);
+}
+
+/* Case study previous / next */
+.case__nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: var(--space-m);
+  align-items: center;
+  padding-top: var(--space-l);
+  border-top: 1px solid var(--rule);
+  margin-top: var(--space-l);
+}
+
+.case__nav-link {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.case__nav-link--next {
+  text-align: right;
+  justify-items: end;
+}
+
+.case__nav-dir {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
+.case__nav-title {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  letter-spacing: -0.01em;
+  transition: color var(--dur-fast);
+  overflow-wrap: anywhere;
+}
+
+.case__nav-link:hover .case__nav-title {
+  color: var(--accent);
+}
+
+.case__nav-index {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 2px;
+  white-space: nowrap;
+}
+
+.case__nav-index:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Route transition: restrained cross-fade, no layout shift. */
+#outlet {
+  transition: opacity 130ms var(--ease-out);
+}
+
+#outlet[data-leaving='true'] {
+  opacity: 0;
+}
+
+#outlet[data-entering='true'] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #outlet,
+  #outlet[data-leaving='true'],
+  #outlet[data-entering='true'] {
+    opacity: 1;
+    transition: none;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Destination pages
    -------------------------------------------------------------------------- */
@@ -603,6 +736,20 @@
 
 .project-row:hover {
   background: rgba(35, 55, 45, 0.4);
+}
+
+.project-row[hidden] {
+  display: none;
+}
+
+.project-empty {
+  padding-block: var(--space-l);
+  color: var(--text-faint);
+  font-size: var(--step--1);
+}
+
+.project-empty[hidden] {
+  display: none;
 }
 
 .project-row__title {
@@ -1355,6 +1502,15 @@
    -------------------------------------------------------------------------- */
 
 @media (min-width: 48rem) {
+  .entrance__layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    gap: var(--space-xl);
+  }
+
+  .entrance__grid {
+    max-width: 34rem;
+  }
+
   .project-row {
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
   }
@@ -1442,28 +1598,33 @@
     font-size: var(--step-7);
   }
 
-  /* On a phone the portrait needs to sit above the type block, not behind it. */
+  /* On a phone the portrait sits above the type block, in its own row. */
   .entrance {
-    align-content: end;
-    padding-block: 5rem var(--space-l);
+    height: 170svh;
+  }
+
+  .entrance__sticky {
+    padding-block: 4.5rem var(--space-s);
+  }
+
+  .entrance__layout {
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: var(--space-s);
   }
 
   .entrance__portrait {
-    place-items: start center;
-    padding-top: 4.5rem;
+    order: -1;
+    min-height: 0;
+    justify-content: center;
+    align-items: flex-end;
   }
 
-  .entrance__portrait canvas {
-    object-position: top center;
+  .entrance__grid {
+    max-width: 100%;
+    padding-bottom: 0;
   }
 
   .entrance__scrim {
-    background: linear-gradient(
-      to top,
-      var(--forest-900) 0%,
-      rgba(16, 26, 22, 0.96) 34%,
-      rgba(16, 26, 22, 0.2) 62%,
-      rgba(16, 26, 22, 0.55) 100%
-    );
+    background: linear-gradient(to top, var(--forest-900) 0%, transparent 30%);
   }
 }
