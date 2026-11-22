@@ -614,7 +614,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 196,
     hint: 'C, POSIX, and what happens below the shell',
     contents: ['Terminator', 'Process and job control', 'X11'],
-    href: '#/systems',
+    href: '#work',
   },
   {
     id: 'intelligence',
@@ -623,7 +623,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 118,
     hint: 'Applied AI, agents, and grounded inference',
     contents: ['Locally Uncensored', 'TigerGraph Fraud Platform', 'GraphRAG'],
-    href: '#/intelligence',
+    href: '#work',
   },
   {
     id: 'product',
@@ -632,7 +632,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 214,
     hint: 'Full-stack systems with money and approvals in them',
     contents: ['RevenueOS', 'ExpenseFlow'],
-    href: '#/product',
+    href: '#work',
   },
   {
     id: 'open-source',
@@ -641,7 +641,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 132,
     hint: 'Merged work in repositories I do not own',
     contents: ['ollama/ollama', 'locally-uncensored', '169 merged pull requests'],
-    href: '#/open-source',
+    href: '#open-source',
   },
   {
     id: 'security',
@@ -650,7 +650,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 452,
     hint: 'CTF history and security tooling',
     contents: ['20+ CTF events', 'DEADFACE CTF', 'boroCTF 104th'],
-    href: '#/security',
+    href: '#security',
   },
   {
     id: 'notes',
@@ -659,7 +659,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 486,
     hint: 'What building these things actually taught me',
     contents: ['Systems', 'Applied AI', 'Open source'],
-    href: '#/notes',
+    href: '#notes',
   },
   {
     id: 'archive',
@@ -668,7 +668,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 430,
     hint: 'Earlier projects and experiments',
     contents: ['Collaborations', 'Prototypes', 'Coursework'],
-    href: '#/archive',
+    href: '#archive',
   },
   {
     id: 'person',
@@ -677,7 +677,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 520,
     hint: 'Education, timeline, and how I work',
     contents: ['B.Tech, Calcutta', 'M.Tech, IIT Kharagpur', 'Timeline'],
-    href: '#/person',
+    href: '#person',
   },
   {
     id: 'contact',
@@ -686,7 +686,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     y: 540,
     hint: 'Where to reach me',
     contents: ['Email', 'GitHub', 'LinkedIn'],
-    href: '#/contact',
+    href: '#contact',
   },
 ];
 

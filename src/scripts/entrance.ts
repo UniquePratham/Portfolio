@@ -1,10 +1,14 @@
 /**
  * Entrance portrait.
  *
- * A short, skippable scrub of the frame sequence. Unlike the previous build it
- * does not pin the page for 300vh: the portrait advances over the first screen
- * of scroll and then releases. Only a handful of frames are fetched up front,
- * so the entrance is usable immediately.
+ * A short, skippable scrub of the frame sequence. The portrait advances over the
+ * distance the entrance section travels while pinned, then releases.
+ *
+ * Sizing is driven by a ResizeObserver on the canvas box, not by `window.resize`
+ * alone: the canvas lives in a grid column whose width changes when fonts load
+ * and when the viewport crosses a breakpoint. Measuring before layout settles
+ * produced a zero-width bitmap and a visible jump when a later resize corrected
+ * it, so every resize is now guarded by an actual dimension change.
  */
 
 interface EntranceOptions {
@@ -17,7 +21,7 @@ const TOTAL = 121;
 /** Frames fetched before the entrance is considered ready. */
 const PRIORITY = 12;
 
-function path(index: number): string {
+function framePath(index: number): string {
   return `/frames/desktop/f${String(index).padStart(4, '0')}.webp`;
 }
 
@@ -27,41 +31,68 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
   const ctx: CanvasRenderingContext2D = context;
 
   const frames: Array<ImageBitmap | null> = new Array(TOTAL).fill(null);
+  /** In-flight requests, so a frame is never fetched twice concurrently. */
+  const pending = new Map<number, Promise<void>>();
+
   let current = -1;
   let target = 0;
   let rafId = 0;
   let destroyed = false;
   let ready = false;
+  let lastWidth = 0;
+  let lastHeight = 0;
 
-  function resize() {
+  /* --- Sizing ---------------------------------------------------------- */
+
+  function resize(): void {
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
+
+    const width = Math.round(rect.width * dpr);
+    const height = Math.round(rect.height * dpr);
+
+    // A zero-size box means layout has not settled. Leave the canvas alone and
+    // wait for the ResizeObserver to fire again rather than writing a 0x0
+    // bitmap, which would blank the portrait until the next resize.
+    if (width < 2 || height < 2) return;
+
+    // Only touch the bitmap when the size actually changed. Assigning
+    // canvas.width clears the canvas, so a redundant resize is a visible flash.
+    if (width === lastWidth && height === lastHeight) return;
+
+    lastWidth = width;
+    lastHeight = height;
+    canvas.width = width;
+    canvas.height = height;
+
     current = -1;
     paint(target, true);
   }
-  function paint(index: number, force = false) {
+
+  /* --- Painting -------------------------------------------------------- */
+
+  function nearestBitmap(index: number): ImageBitmap | null {
+    const exact = frames[index];
+    if (exact) return exact;
+
+    for (let offset = 1; offset < TOTAL; offset += 1) {
+      const before = frames[index - offset];
+      if (before) return before;
+      const after = frames[index + offset];
+      if (after) return after;
+    }
+    return null;
+  }
+
+  function paint(index: number, force = false): void {
     if (index === current && !force) return;
 
-    let bitmap = frames[index];
-    if (!bitmap) {
-      for (let offset = 1; offset < TOTAL; offset += 1) {
-        const before = frames[index - offset];
-        if (before) {
-          bitmap = before;
-          break;
-        }
-        const after = frames[index + offset];
-        if (after) {
-          bitmap = after;
-          break;
-        }
-      }
-    }
+    const bitmap = nearestBitmap(index);
     if (!bitmap) return;
 
     const { width, height } = canvas;
+    if (width < 2 || height < 2) return;
+
     // Fit the height and anchor to the bottom: the head sits at the top of the
     // crop, so vertical cropping would remove it. The portrait has its own
     // column, so no text can overlap it.
@@ -76,15 +107,16 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
     current = index;
   }
 
+  /* --- Scroll progress ------------------------------------------------- */
+
   function progress(): number {
     const rect = section.getBoundingClientRect();
-    // The scrub advances over the distance the section travels while pinned.
     const scrollable = rect.height - window.innerHeight;
     if (scrollable <= 0) return 0;
     return Math.min(1, Math.max(0, -rect.top / scrollable));
   }
 
-  function tick() {
+  function tick(): void {
     if (destroyed) return;
     const p = progress();
     target = Math.round(p * (TOTAL - 1));
@@ -92,37 +124,49 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
     rafId = requestAnimationFrame(tick);
   }
 
-  async function load(index: number) {
-    if (destroyed || frames[index]) return;
-    try {
-      const res = await fetch(path(index), { cache: 'force-cache' });
-      if (!res.ok) return;
-      const bitmap = await createImageBitmap(await res.blob());
-      if (destroyed) {
-        bitmap.close();
-        return;
+  /* --- Loading --------------------------------------------------------- */
+
+  function load(index: number): Promise<void> {
+    if (destroyed || frames[index]) return Promise.resolve();
+
+    const existing = pending.get(index);
+    if (existing) return existing;
+
+    const task = (async () => {
+      try {
+        const res = await fetch(framePath(index), { cache: 'force-cache' });
+        if (!res.ok) return;
+        const bitmap = await createImageBitmap(await res.blob());
+        if (destroyed) {
+          bitmap.close();
+          return;
+        }
+        frames[index] = bitmap;
+        // Repaint if this frame is the one the scrub is currently asking for.
+        if (index === target) paint(index, true);
+      } catch {
+        // A missing frame is survivable; paint() falls back to a neighbour.
+      } finally {
+        pending.delete(index);
       }
-      frames[index] = bitmap;
-      if (index === 0) paint(0, true);
-    } catch {
-      // A missing frame is survivable; paint() falls back to a neighbour.
-    }
+    })();
+
+    pending.set(index, task);
+    return task;
   }
 
-  async function loadAll() {
-    // Priority frames first, spread across the sequence.
+  async function loadAll(): Promise<void> {
     const priority: number[] = [];
     for (let i = 0; i < PRIORITY; i += 1) {
       priority.push(Math.round((i / (PRIORITY - 1)) * (TOTAL - 1)));
     }
     await Promise.all(priority.map(load));
 
-    if (!ready) {
+    if (!ready && !destroyed) {
       ready = true;
       onReady?.();
     }
 
-    // The rest, in the background, at low concurrency.
     const rest: number[] = [];
     for (let i = 0; i < TOTAL; i += 1) {
       if (!frames[i]) rest.push(i);
@@ -140,8 +184,19 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
     await Promise.all(Array.from({ length: 3 }, worker));
   }
 
+  /* --- Boot ------------------------------------------------------------ */
+
+  // Measure once now, then let the observer handle every later change.
   resize();
-  window.addEventListener('resize', resize, { passive: true });
+
+  const resizeObserver = new ResizeObserver(() => resize());
+  resizeObserver.observe(canvas);
+
+  // Fonts change the grid column width after first paint.
+  if ('fonts' in document) {
+    void document.fonts.ready.then(() => resize());
+  }
+
   rafId = requestAnimationFrame(tick);
   void loadAll();
 
@@ -150,6 +205,7 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
     () => {
       destroyed = true;
       cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
       frames.forEach((b) => b?.close());
     },
     { once: true },

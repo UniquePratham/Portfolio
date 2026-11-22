@@ -35,11 +35,22 @@ function buildCommands(): Command[] {
     });
   }
 
+  // Sections that are not atlas destinations still need to be findable.
+  const extra: Array<[string, string, string]> = [
+    ['Capability map', '#capabilities', 'languages frameworks tools stack domains'],
+    ['Archive', '#archive', 'earlier projects prototypes experiments'],
+    ['Security range', '#security', 'ctf competitions deadface boroctf'],
+    ['All projects', '#work', 'index filter list'],
+  ];
+  for (const [label, href, keywords] of extra) {
+    commands.push({ label, hint: 'Section', href, keywords: `${label} ${keywords}`.toLowerCase() });
+  }
+
   for (const p of PROJECTS) {
     commands.push({
       label: p.title,
       hint: 'Case study',
-      href: `#/work/${p.slug}`,
+      href: `#project-${p.slug}`,
       keywords: `${p.title} ${p.summary} ${p.stack.join(' ')} ${p.discipline}`.toLowerCase(),
     });
   }
@@ -48,7 +59,7 @@ function buildCommands(): Command[] {
     commands.push({
       label: n.title,
       hint: `Note · ${n.category}`,
-      href: `#/notes/${n.slug}`,
+      href: `#note-${n.slug}`,
       keywords: `${n.title} ${n.summary} ${n.category}`.toLowerCase(),
     });
   }

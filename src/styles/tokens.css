@@ -95,7 +95,13 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-padding-top: 6rem;
+}
+
+/* Anchor targets clear the fixed masthead. This is the only offset rule; the
+   scroll helper computes the same value in JS for Lenis. */
+section[id],
+article[id] {
+  scroll-margin-top: 5.5rem;
 }
 
 body {

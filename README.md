@@ -15,33 +15,34 @@ one peak per destination, contours it with marching squares, simplifies the resu
 with Ramer–Douglas–Peucker, and writes `src/data/contours.json` — 14 levels, 23
 paths, 9.7 kB. The map is a real survey of the content.
 
-## SPA architecture
+## One page, one document
 
-One document, one application shell, one entry point. Only `#outlet` changes.
+The site is a **single document**. Every section is rendered once into `#outlet`
+and navigated to by `#id` — there is no route swap, no re-render, and no
+possibility of a full page load.
 
-**Persistent across navigation:** masthead, monogram, command palette, footer,
-Lenis instance, reveal observer, entrance portrait.
+```
+#atlas  #work  #project-<slug>  #open-source  #security
+#notes  #note-<slug>  #person  #capabilities  #archive  #contact
+```
 
-**Route lifecycle** (`src/scripts/router.ts`):
+**Persistent:** masthead, monogram, command palette, footer, Lenis instance,
+reveal observer, entrance portrait. Nothing is recreated on navigation.
 
-1. Save the outgoing scroll position.
-2. Run the previous route's cleanup function.
-3. Match the new route.
-4. Cross-fade the outlet out (130 ms, skipped under `prefers-reduced-motion`).
-5. Render, set title + description + OG tags.
-6. Restore scroll (remembered for revisited routes, top otherwise).
-7. Focus the new `h1` unless a dialog is open.
-8. Run the new route's `mount`, which may return a cleanup.
+**Anchor navigation** (`src/main.ts`):
 
-`mount` is where route-specific listeners live. The atlas returns a cleanup that
-removes every listener it added, so repeated visits cannot accumulate them.
+- One delegated click handler intercepts every `a[href^="#"]`, so a link never
+  causes a document load.
+- The target position is computed once in JS and passed to Lenis as an absolute
+  number — a single source of truth for the 88 px masthead offset.
+- `hashchange` and `popstate` both scroll, so a programmatically set hash, a
+  pasted URL, and the Back button all behave the same.
+- Modifier-clicks are left alone, so Cmd/Ctrl-click still opens a new tab.
+- A deep link on load re-applies its position after layout, fonts and the
+  portrait have settled.
 
-**History:** real hash entries, so Back and Forward work. Navigating to the route
-you are already on scrolls to top instead of pushing a duplicate entry. Scroll
-positions are kept in `sessionStorage` per path.
-
-**Invalid routes** render a designed 404 inside the shell with a return link —
-they are not silently redirected.
+**The last section is reachable.** `#contact` gets `min-height: calc(100svh -
+5.5rem)` so the page can scroll far enough for it to clear the masthead.
 
 ## Stack
 
@@ -50,7 +51,7 @@ they are not silently redirected.
 - **Newsreader / Manrope / IBM Plex Mono**, self-hosted via Fontsource
 - **Firebase Hosting**
 
-Initial JS is **28 kB gzipped**; CSS is **6.9 kB gzipped**.
+Initial JS is **26.8 kB gzipped**; CSS is **6.9 kB gzipped**.
 
 ## Structure
 
@@ -62,8 +63,7 @@ Initial JS is **28 kB gzipped**; CSS is **6.9 kB gzipped**.
 │   │   ├── content.ts      # all content, typed
 │   │   └── contours.json   # generated terrain
 │   ├── scripts/
-│   │   ├── router.ts       # hash router, focus management
-│   │   ├── views.ts        # one template per route
+│   │   ├── sections.ts     # one template per section
 │   │   ├── atlas.ts        # SVG terrain + markers
 │   │   ├── palette.ts      # ⌘K command palette
 │   │   └── entrance.ts     # skippable portrait scrub
@@ -81,21 +81,20 @@ Initial JS is **28 kB gzipped**; CSS is **6.9 kB gzipped**.
 
 ## Routes
 
-Every destination and case study is a real URL, so links are shareable and the
-back button works.
+Every section is a real anchor, so links are shareable and the back button works.
 
-| Route | Content |
+| Anchor | Content |
 | --- | --- |
-| `#/` | Atlas |
-| `#/work` | Project index with discipline filters |
-| `#/work/:slug` | Case study — problem, approach, architecture, decisions |
-| `#/open-source` | Merged PRs with diff sizes, plus collaborations |
-| `#/security` | CTF record |
-| `#/notes`, `#/notes/:slug` | Field notes |
-| `#/person` | Education, philosophy, timeline (mineral-light surface) |
-| `#/capabilities` | Capability map, grouped by domain |
-| `#/archive` | Earlier work |
-| `#/contact` | Contact |
+| `#atlas` | The map |
+| `#work` | Project index with discipline filters |
+| `#project-:slug` | Case study — problem, approach, architecture, decisions |
+| `#open-source` | Merged PRs with diff sizes, plus collaborations |
+| `#security` | CTF record |
+| `#notes`, `#note-:slug` | Field notes |
+| `#person` | Education, philosophy, timeline (mineral-light surface) |
+| `#capabilities` | Capability map, grouped by domain |
+| `#archive` | Earlier work |
+| `#contact` | Contact |
 
 ## Design
 

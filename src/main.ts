@@ -8,40 +8,43 @@ import './styles/tokens.css';
 import './styles/layout.css';
 
 import Lenis from 'lenis';
-import { initRouter, navigate, type Route, type RouteContext } from './scripts/router';
 import { initAtlas } from './scripts/atlas';
 import { initPalette } from './scripts/palette';
 import { initEntrance } from './scripts/entrance';
-import { PROJECTS, FIELD_NOTES } from './data/content';
 import {
   renderAtlas,
   renderWork,
-  renderCase,
+  renderCases,
   renderOpenSource,
   renderSecurity,
   renderNotes,
-  renderNote,
   renderPerson,
   renderCapabilities,
   renderArchive,
   renderContact,
-  renderDiscipline,
-  renderNotFound,
-} from './scripts/views';
+} from './scripts/sections';
 
 /* =========================================================================
-   Persistent shell references
+   One page, rendered once
    ========================================================================= */
 
 const outlet = document.getElementById('outlet') as HTMLElement;
-const masthead = document.getElementById('masthead');
-const menuToggle = document.getElementById('menu-toggle');
-const mastheadNav = document.getElementById('masthead-nav');
-const entranceSection = document.getElementById('entrance');
-const entranceCanvas = document.getElementById('entrance-canvas') as HTMLCanvasElement | null;
+
+outlet.innerHTML = [
+  renderAtlas(),
+  renderWork(),
+  renderCases(),
+  renderOpenSource(),
+  renderSecurity(),
+  renderNotes(),
+  renderPerson(),
+  renderCapabilities(),
+  renderArchive(),
+  renderContact(),
+].join('');
 
 /* =========================================================================
-   Smooth scrolling — created once, never per route
+   Smooth scrolling — created once
    ========================================================================= */
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -64,70 +67,133 @@ if (lenis) {
 }
 
 /* =========================================================================
-   Reveal on scroll — one observer, re-targeted per route
+   Anchor navigation — every internal link is a #id, never a new document
    ========================================================================= */
 
-let revealObserver: IntersectionObserver | null = null;
+const masthead = document.getElementById('masthead');
+const menuToggle = document.getElementById('menu-toggle');
+const mastheadNav = document.getElementById('masthead-nav');
+const entranceSection = document.getElementById('entrance');
 
-function observeReveals(root: ParentNode = document): void {
-  revealObserver?.disconnect();
+const HEADER_OFFSET = 88;
 
-  const targets = root.querySelectorAll<HTMLElement>('[data-reveal]');
-  if (targets.length === 0) return;
+/**
+ * Scroll to a section by id.
+ *
+ * The target position is computed here and passed to Lenis as an absolute
+ * number, so there is exactly one source of truth for the offset. Passing
+ * `offset` to Lenis while also relying on `scroll-margin-top` double-counts it.
+ */
+function scrollToId(id: string, smooth = true): void {
+  const target = document.getElementById(id);
+  if (!target) return;
 
-  if (!('IntersectionObserver' in window)) {
-    targets.forEach((t) => t.classList.add('is-visible'));
-    return;
+  const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET);
+
+  if (lenis) {
+    lenis.scrollTo(top, { duration: smooth ? 1.1 : 0, immediate: !smooth });
+  } else {
+    window.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
+  }
+}
+
+function currentId(): string {
+  return window.location.hash.replace(/^#/, '');
+}
+
+/** Intercept every same-document anchor so the browser never jumps abruptly. */
+document.addEventListener('click', (event) => {
+  const anchor = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>('a[href^="#"]');
+  if (!anchor) return;
+
+  const href = anchor.getAttribute('href') ?? '';
+  // A bare "#" is not a destination.
+  if (href === '#' || href === '') return;
+
+  // Let modifier-clicks open a new tab with the anchor intact.
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+
+  const id = href.slice(1);
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  event.preventDefault();
+
+  // Update the URL without adding a history entry for every scroll.
+  if (currentId() !== id) {
+    window.history.pushState(null, '', `#${id}`);
   }
 
-  revealObserver = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.classList.add('is-visible');
-        revealObserver?.unobserve(entry.target);
-      }
-    },
-    { rootMargin: '0px 0px -10% 0px', threshold: 0.05 },
-  );
+  scrollToId(id);
+  closeMenu();
+});
 
-  targets.forEach((t) => revealObserver?.observe(t));
+/** Deep link: a hash on load must land on the right section. */
+function applyInitialHash(): void {
+  const id = currentId();
+  if (!id) return;
+
+  const jump = () => {
+    const target = document.getElementById(id);
+    if (!target) return;
+    // Instant, not smooth: a smooth scroll on load looks like a glitch.
+    const top = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+    window.scrollTo({ top, behavior: 'auto' });
+  };
+
+  // Layout, fonts and the portrait all change section heights after first
+  // paint, so re-apply once each settles.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(jump);
+  });
+
+  if ('fonts' in document) {
+    void document.fonts.ready.then(() => {
+      requestAnimationFrame(jump);
+    });
+  }
+
+  window.addEventListener('load', () => requestAnimationFrame(jump), { once: true });
 }
+
+applyInitialHash();
+
+window.addEventListener('popstate', () => {
+  const id = currentId();
+  if (id) scrollToId(id, false);
+  else window.scrollTo({ top: 0, behavior: 'auto' });
+});
+
+// A hash set programmatically, or by a link the click handler did not catch,
+// fires `hashchange` rather than `popstate`. Both must scroll.
+window.addEventListener('hashchange', () => {
+  const id = currentId();
+  if (!id) return;
+  // Skip if the click handler already scrolled to this target.
+  const target = document.getElementById(id);
+  if (!target) return;
+  const top = target.getBoundingClientRect().top;
+  if (Math.abs(top - HEADER_OFFSET) < 4) return;
+  scrollToId(id);
+});
 
 /* =========================================================================
    Masthead
    ========================================================================= */
 
-function updateNavState(path: string): void {
-  mastheadNav?.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => {
-    const href = a.getAttribute('href') ?? '';
-    const target = href.replace(/^#/, '');
-    const active = target === path || (target !== '/' && path.startsWith(target));
-    a.setAttribute('aria-current', String(active));
-  });
-}
-
-/** The entrance belongs to the home route only. */
-function syncShell(path: string): void {
-  if (entranceSection) {
-    const isHome = path === '/';
-    entranceSection.hidden = !isHome;
-    document.body.classList.toggle('is-home', isHome);
-  }
-  document.body.setAttribute('data-surface', path === '/person' ? 'light' : 'dark');
+function closeMenu(): void {
+  masthead?.setAttribute('data-open', 'false');
+  menuToggle?.setAttribute('aria-expanded', 'false');
 }
 
 menuToggle?.addEventListener('click', () => {
   const open = masthead?.getAttribute('data-open') === 'true';
   masthead?.setAttribute('data-open', String(!open));
-  menuToggle.setAttribute('aria-expanded', String(!open));
+  menuToggle?.setAttribute('aria-expanded', String(!open));
 });
 
-mastheadNav?.querySelectorAll('a').forEach((a) => {
-  a.addEventListener('click', () => {
-    masthead?.setAttribute('data-open', 'false');
-    menuToggle?.setAttribute('aria-expanded', 'false');
-  });
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeMenu();
 });
 
 let lastScroll = 0;
@@ -146,168 +212,113 @@ window.addEventListener(
 );
 
 /* =========================================================================
-   Project filters — in place, no innerHTML replacement
+   Active section in the masthead
    ========================================================================= */
 
-function mountFilters(root: HTMLElement): void {
-  const buttons = root.querySelectorAll<HTMLButtonElement>('[data-filter]');
-  const rows = root.querySelectorAll<HTMLElement>('.project-row');
-  const empty = root.querySelector<HTMLElement>('[data-empty]');
-  if (buttons.length === 0) return;
+const SECTION_IDS = [
+  'atlas',
+  'work',
+  'open-source',
+  'security',
+  'notes',
+  'person',
+  'capabilities',
+  'archive',
+  'contact',
+];
 
-  const apply = (value: string) => {
-    let shown = 0;
-    rows.forEach((row) => {
-      const match = value === 'all' || row.dataset.discipline === value;
-      row.hidden = !match;
-      if (match) shown += 1;
-    });
-    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === value)));
-    if (empty) empty.hidden = shown > 0;
-  };
+const sectionEls = SECTION_IDS.map((id) => document.getElementById(id)).filter(
+  (el): el is HTMLElement => el !== null,
+);
 
-  buttons.forEach((btn) => {
-    btn.addEventListener('click', () => apply(btn.dataset.filter ?? 'all'));
+function setActiveSection(id: string): void {
+  mastheadNav?.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => {
+    const target = (a.getAttribute('href') ?? '').replace(/^#/, '');
+    a.setAttribute('aria-current', String(target === id));
+  });
+}
+
+if ('IntersectionObserver' in window && sectionEls.length > 0) {
+  const spy = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        setActiveSection(entry.target.id);
+      }
+    },
+    { rootMargin: '-45% 0px -45% 0px' },
+  );
+  sectionEls.forEach((el) => spy.observe(el));
+}
+
+/* =========================================================================
+   Reveal on scroll
+   ========================================================================= */
+
+const revealTargets = document.querySelectorAll<HTMLElement>('[data-reveal]');
+
+if (revealTargets.length > 0) {
+  if (!('IntersectionObserver' in window)) {
+    revealTargets.forEach((t) => t.classList.add('is-visible'));
+  } else {
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '0px 0px -10% 0px', threshold: 0.05 },
+    );
+    revealTargets.forEach((t) => revealObserver.observe(t));
+  }
+}
+
+/* =========================================================================
+   Project filters — in place
+   ========================================================================= */
+
+const filterButtons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+const projectRows = document.querySelectorAll<HTMLElement>('.project-row');
+const emptyState = document.querySelector<HTMLElement>('[data-empty]');
+
+function applyFilter(value: string): void {
+  let shown = 0;
+  projectRows.forEach((row) => {
+    const match = value === 'all' || row.dataset.discipline === value;
+    row.hidden = !match;
+    if (match) shown += 1;
+  });
+  filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === value)));
+  if (emptyState) emptyState.hidden = shown > 0;
+}
+
+filterButtons.forEach((btn) => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.filter ?? 'all'));
+});
+
+/* =========================================================================
+   Atlas
+   ========================================================================= */
+
+const atlasSvg = document.getElementById('atlas-svg') as SVGSVGElement | null;
+const atlasReadout = document.getElementById('atlas-readout');
+
+if (atlasSvg && atlasReadout) {
+  initAtlas({
+    svg: atlasSvg,
+    readout: atlasReadout,
+    onNavigate: (href) => {
+      const id = href.replace(/^#/, '');
+      if (currentId() !== id) window.history.pushState(null, '', `#${id}`);
+      scrollToId(id);
+    },
   });
 }
 
 /* =========================================================================
-   Routes
-   ========================================================================= */
-
-function projectTitle(slug: string): string {
-  return PROJECTS.find((p) => p.slug === slug)?.title ?? 'Project';
-}
-
-function noteTitle(slug: string): string {
-  return FIELD_NOTES.find((n) => n.slug === slug)?.title ?? 'Note';
-}
-
-const routes: Route[] = [
-  {
-    pattern: /^\/$/,
-    render: () => renderAtlas(),
-    title: () => 'Pratham Agarwal — Engineering Atlas',
-    description: () =>
-      'Pratham Agarwal — full stack developer in Kolkata. Systems, applied AI and security work, with case studies and open-source contributions.',
-    mount: (_ctx, root) => {
-      const svg = root.querySelector<SVGSVGElement>('#atlas-svg');
-      const readout = root.querySelector<HTMLElement>('#atlas-readout');
-      if (!svg || !readout) return;
-      initAtlas({ svg, readout, onNavigate: navigate });
-      return () => {
-        (svg as SVGSVGElement & { __cleanup?: () => void }).__cleanup?.();
-      };
-    },
-  },
-  {
-    pattern: /^\/work$/,
-    render: () => renderWork(),
-    title: () => 'Work — Pratham Agarwal',
-    description: () =>
-      'Six engineering case studies: a terminal emulator in C, a local-first AI desktop app, an agentic fraud console, and more.',
-    mount: (_ctx, root) => {
-      mountFilters(root);
-    },
-  },
-  {
-    pattern: /^\/work\/([\w-]+)$/,
-    render: ({ params }) => renderCase(params[0] ?? ''),
-    title: ({ params }) => `${projectTitle(params[0] ?? '')} — Project Case Study | Pratham Agarwal`,
-    description: ({ params }) => {
-      const p = PROJECTS.find((x) => x.slug === params[0]);
-      return p?.summary ?? 'Project case study.';
-    },
-  },
-  {
-    pattern: /^\/open-source$/,
-    render: () => renderOpenSource(),
-    title: () => 'Open Source — Pratham Agarwal',
-    description: () =>
-      'Merged pull requests into ollama/ollama and locally-uncensored, plus long-running collaboration on team builds.',
-  },
-  {
-    pattern: /^\/security$/,
-    render: () => renderSecurity(),
-    title: () => 'Security — Pratham Agarwal',
-    description: () => 'CTF record: 20+ events including DEADFACE CTF and boroCTF.',
-  },
-  {
-    pattern: /^\/notes$/,
-    render: () => renderNotes(),
-    title: () => 'Field Notes — Pratham Agarwal',
-    description: () => 'Short write-ups from actual engineering work.',
-  },
-  {
-    pattern: /^\/notes\/([\w-]+)$/,
-    render: ({ params }) => renderNote(params[0] ?? ''),
-    title: ({ params }) => `${noteTitle(params[0] ?? '')} — Field Notes | Pratham Agarwal`,
-    description: ({ params }) => FIELD_NOTES.find((n) => n.slug === params[0])?.summary ?? '',
-  },
-  {
-    pattern: /^\/person$/,
-    render: () => renderPerson(),
-    title: () => 'About — Pratham Agarwal',
-    description: () =>
-      'M.Tech CSE at IIT Kharagpur, B.Tech at the University of Calcutta, and how I work.',
-  },
-  {
-    pattern: /^\/capabilities$/,
-    render: () => renderCapabilities(),
-    title: () => 'Capabilities — Pratham Agarwal',
-    description: () => 'Languages, frameworks and tools, grouped by engineering domain.',
-  },
-  {
-    pattern: /^\/archive$/,
-    render: () => renderArchive(),
-    title: () => 'Archive — Pratham Agarwal',
-    description: () => 'Earlier projects and experiments.',
-  },
-  {
-    pattern: /^\/contact$/,
-    render: () => renderContact(),
-    title: () => 'Contact — Pratham Agarwal',
-    description: () => 'Open to collaborations, freelance work and interesting problems.',
-  },
-  {
-    pattern: /^\/systems$/,
-    render: () => renderDiscipline('systems'),
-    title: () => 'Systems — Pratham Agarwal',
-    description: () => 'C, POSIX and low-level engineering.',
-  },
-  {
-    pattern: /^\/intelligence$/,
-    render: () => renderDiscipline('ai'),
-    title: () => 'Applied AI — Pratham Agarwal',
-    description: () => 'Applied AI, agents and grounded inference.',
-  },
-  {
-    pattern: /^\/product$/,
-    render: () => renderDiscipline('product'),
-    title: () => 'Product — Pratham Agarwal',
-    description: () => 'Full-stack systems with money and approvals in them.',
-  },
-  {
-    pattern: /^\/tools$/,
-    render: () => renderDiscipline('tools'),
-    title: () => 'Developer Tools — Pratham Agarwal',
-    description: () => 'Small, sharp utilities.',
-  },
-];
-
-initRouter({
-  routes,
-  outlet,
-  notFound: () => renderNotFound(),
-  onNavigate(ctx: RouteContext) {
-    syncShell(ctx.path);
-    observeReveals(outlet);
-    updateNavState(ctx.path);
-  },
-});
-
-/* =========================================================================
-   Command palette — mounted once, global
+   Command palette — mounted once
    ========================================================================= */
 
 const paletteRoot = document.getElementById('palette');
@@ -319,7 +330,11 @@ if (paletteRoot && paletteInput && paletteResults) {
     root: paletteRoot,
     input: paletteInput,
     results: paletteResults,
-    onNavigate: navigate,
+    onNavigate: (href) => {
+      const id = href.replace(/^#/, '');
+      if (currentId() !== id) window.history.pushState(null, '', `#${id}`);
+      scrollToId(id);
+    },
   });
 }
 
@@ -327,24 +342,21 @@ if (paletteRoot && paletteInput && paletteResults) {
    Entrance portrait — mounted once
    ========================================================================= */
 
+const entranceCanvas = document.getElementById('entrance-canvas') as HTMLCanvasElement | null;
+
 if (entranceCanvas && entranceSection) {
   initEntrance({ canvas: entranceCanvas, section: entranceSection });
 }
 
 /* =========================================================================
-   "Enter the atlas" — scroll to the map, do not fake a route
+   "Enter the atlas"
    ========================================================================= */
 
 document.querySelectorAll<HTMLElement>('[data-scroll-to-atlas]').forEach((el) => {
   el.addEventListener('click', (event) => {
     event.preventDefault();
-    const atlas = document.querySelector('.atlas');
-    if (!atlas) return;
-    if (lenis) {
-      lenis.scrollTo(atlas as HTMLElement, { offset: -72, duration: 1.1 });
-    } else {
-      atlas.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (currentId() !== 'atlas') window.history.pushState(null, '', '#atlas');
+    scrollToId('atlas');
   });
 });
 

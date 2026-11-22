@@ -17,7 +17,6 @@
     border-color var(--dur-base) var(--ease-out),
     transform var(--dur-base) var(--ease-out);
 }
-
 .masthead[data-scrolled='true'] {
   background: rgba(16, 26, 22, 0.86);
   backdrop-filter: blur(12px);
@@ -27,6 +26,23 @@
 
 .masthead[data-hidden='true'] {
   transform: translateY(-100%);
+}
+
+/* The masthead hides on scroll-down, but must always be reachable: hovering the
+   top edge or focusing a link brings it back. */
+.masthead[data-hidden='true']:hover,
+.masthead[data-hidden='true']:focus-within {
+  transform: none;
+}
+
+/* A thin hover strip so the hidden masthead can be summoned without hunting. */
+.masthead::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 14px;
 }
 
 .masthead__inner {
@@ -141,8 +157,11 @@
   position: sticky;
   top: 0;
   height: 100svh;
+  /* A definite row height, so the layout below can resolve `height: 100%`.
+     Without this the portrait's height is derived from the text column and
+     jumps when fonts load and the text reflows. */
   display: grid;
-  align-content: end;
+  grid-template-rows: minmax(0, 1fr);
   padding-block: 7rem var(--space-xl);
   overflow: hidden;
   isolation: isolate;
@@ -157,9 +176,11 @@
   gap: var(--space-l);
   align-items: end;
   height: 100%;
+  min-height: 0;
 }
 
-/* The portrait column. */
+/* The portrait column. Its height comes from the layout row, never from the
+   text beside it. */
 .entrance__portrait {
   position: relative;
   display: flex;
@@ -167,6 +188,7 @@
   justify-content: center;
   min-height: 0;
   height: 100%;
+  align-self: stretch;
 }
 
 .entrance__portrait canvas {
@@ -612,6 +634,34 @@
 .case__nav-index:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+/* Case studies are stacked articles, each its own anchor target. */
+.case {
+  display: grid;
+  gap: var(--space-xl);
+  padding-block: var(--space-2xl);
+  border-top: 1px solid var(--rule);
+}
+
+.case:first-of-type {
+  border-top: 0;
+}
+
+/* Field notes are stacked articles. */
+.note {
+  display: grid;
+  gap: var(--space-2xs);
+  padding-block: var(--space-l);
+  border-bottom: 1px solid var(--rule);
+}
+
+.note:last-child {
+  border-bottom: 0;
+}
+
+.note .note-body {
+  margin-top: var(--space-s);
 }
 
 /* Route transition: restrained cross-fade, no layout shift. */
@@ -1339,6 +1389,11 @@
 .contact {
   padding-block: var(--space-2xl) var(--space-xl);
   border-top: 1px solid var(--rule);
+  /* The last section must be able to scroll clear of the masthead, otherwise
+     its anchor is unreachable. It needs a full viewport minus the offset. */
+  min-height: calc(100svh - 5.5rem);
+  display: grid;
+  align-content: center;
 }
 
 .contact__title {
