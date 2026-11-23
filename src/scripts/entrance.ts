@@ -21,8 +21,13 @@ const TOTAL = 121;
 /** Frames fetched before the entrance is considered ready. */
 const PRIORITY = 12;
 
+/** Phones get the portrait crop, which fills the frame without letterboxing. */
+const TIER: 'desktop' | 'mobile' = window.matchMedia('(max-width: 47.99rem)').matches
+  ? 'mobile'
+  : 'desktop';
+
 function framePath(index: number): string {
-  return `/frames/desktop/f${String(index).padStart(4, '0')}.webp`;
+  return `/frames/${TIER}/f${String(index).padStart(4, '0')}.webp`;
 }
 
 export function initEntrance({ canvas, section, onReady }: EntranceOptions): void {
