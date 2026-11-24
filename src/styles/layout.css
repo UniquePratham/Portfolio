@@ -195,6 +195,10 @@
   min-height: 0;
   height: min(100%, 45.75rem);
   align-self: end;
+  /* The sticky has 3.5rem of bottom padding, which would leave the portrait
+     floating above the viewport bottom. The negative margin cancels it so the
+     subject's feet sit on the very bottom edge. */
+  margin-bottom: calc(-1 * var(--space-xl));
   overflow: hidden;
 }
 
@@ -213,15 +217,6 @@
   object-fit: contain;
   object-position: bottom center;
   display: block;
-}
-
-/* A soft edge where the portrait meets the page. No text sits over it. */
-.entrance__scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(to top, var(--forest-900) 0%, transparent 22%);
 }
 
 .entrance__grid {
@@ -2078,14 +2073,13 @@
     min-height: 0;
     justify-content: center;
     align-items: flex-end;
+    /* On mobile the portrait sits above the text row, not at the viewport
+       bottom, so the desktop's negative margin does not apply here. */
+    margin-bottom: 0;
   }
 
   .entrance__grid {
     max-width: 100%;
     padding-bottom: 0;
-  }
-
-  .entrance__scrim {
-    background: linear-gradient(to top, var(--forest-900) 0%, transparent 30%);
   }
 }

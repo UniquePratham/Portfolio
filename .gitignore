@@ -16,3 +16,6 @@ node_modules/
 .vercel/
 _shots
 _tools/*.mjs
+
+# Full-body source frames (1 GB of 5072x6528 PNGs) — never commit.
+_frames_src/
