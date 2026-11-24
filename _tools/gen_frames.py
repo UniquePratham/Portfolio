@@ -1,18 +1,16 @@
-"""Regenerate both frame tiers, normalised on the subject's head.
+"""Generate portrait frames that fill their box, anchored to the bottom.
 
-The source footage is a moving camera and a moving subject. Two things vary:
+The previous output was a 1554x1000 landscape frame. The canvas it is painted
+into is portrait (roughly 600x730), so a `min` fit shrank the frame to fit the
+width and the subject occupied only ~40% of the box height, with dead space
+above. That is the "small" the portrait kept falling into.
 
-  * the full silhouette, because the arms move (2150-2606 px wide, a 21% swing)
-  * the camera distance, which changes the subject's overall scale
+This script produces a **portrait** frame whose aspect matches the canvas, with
+the subject scaled to fill it and its feet pinned to the bottom edge. Painting
+it with a `cover` fit then fills the box exactly, at every viewport.
 
-Normalising on the full silhouette fails: the arms dominate the bounding box, so
-a frame with arms out gets scaled down and the figure appears to shrink. The head
-is the stable anatomical anchor — its width varies only 836-864 px (3%) across
-the sequence.
-
-So each frame is scaled so the *head* is a constant width, then positioned so the
-head sits at a constant point on the canvas. The pose still changes; the figure's
-apparent size does not.
+Normalisation is on the head width, not the silhouette: the arms move, so the
+silhouette swings ~21% while the head varies ~3%.
 """
 from PIL import Image
 import numpy as np
@@ -22,19 +20,23 @@ import glob
 SRC = r'C:\Users\gargp\Downloads\Portfolio\_srcframes'
 OUT = r'C:\Users\gargp\Downloads\Portfolio\public\frames'
 
-OUT_W, OUT_H = 1554, 1000
+# Portrait output. 3:4 matches the canvas box closely enough that a cover fit
+# crops almost nothing.
+OUT_W, OUT_H = 900, 1200
 
-# Target head width in the output, and where the head's centre sits.
-HEAD_W = 300
+HEAD_W = 250            # constant head width in the output
 HEAD_CENTRE_X = 0.5     # fraction of OUT_W
-HEAD_TOP_Y = 0.06       # fraction of OUT_H
+HEAD_TOP_Y = 0.045      # fraction of OUT_H
+HEAD_BAND = 0.22        # head occupies the top fraction of the subject bbox
 
-# The head occupies the top fraction of the subject's bounding box.
-HEAD_BAND = 0.22
+# The subject must reach the bottom edge. After placing the head, the frame is
+# scaled up so the subject's feet land on the bottom; this factor is the target
+# subject height as a fraction of the output height.
+SUBJECT_FILL = 0.97
 
 TIERS = {
-    'desktop': dict(size=(OUT_W, OUT_H), quality=78),
-    'mobile': dict(size=(732, 1000), quality=76),
+    'desktop': dict(size=(OUT_W, OUT_H), quality=80),
+    'mobile': dict(size=(720, 960), quality=78),
 }
 
 files = sorted(glob.glob(os.path.join(SRC, '*.webp')))
@@ -42,7 +44,6 @@ assert len(files) == 121, f'expected 121 source frames, found {len(files)}'
 
 
 def measure(path):
-    """Return (bbox, head_left, head_right, head_top) for one frame."""
     with Image.open(path) as im:
         rgba = im.convert('RGBA')
     alpha = np.asarray(rgba.split()[-1])
@@ -52,15 +53,13 @@ def measure(path):
 
     x0, y0, x1, y1 = bbox
     head_bottom = y0 + max(1, int((y1 - y0) * HEAD_BAND))
-    band = alpha[y0:head_bottom, :]
-    cols = np.where(band.max(axis=0) > 12)[0]
+    cols = np.where(alpha[y0:head_bottom, :].max(axis=0) > 12)[0]
     if len(cols) == 0:
         raise SystemExit(f'no head pixels in {path}')
 
     return bbox, int(cols[0]), int(cols[-1]), y0
 
 
-# Pass 1: measure every frame.
 measurements = [measure(f) for f in files]
 
 for tier, cfg in TIERS.items():
@@ -80,18 +79,25 @@ for tier, cfg in TIERS.items():
         if head_w <= 0:
             raise SystemExit(f'degenerate head width in {f}')
 
-        # Scale so the head is HEAD_W wide in the output.
-        scale = HEAD_W / head_w
+        # Two constraints: the head must be a constant width (so the figure does
+        # not change size between frames), and the subject must reach the bottom
+        # edge (so there is no dead space under the feet). Take whichever scale
+        # is larger, then verify the head width stays within tolerance.
+        subject_h = bbox[3] - bbox[1]
+        scale_head = HEAD_W / head_w
+        scale_fill = (out_h * SUBJECT_FILL) / subject_h
+        scale = max(scale_head, scale_fill)
+
         new_w = max(1, round(frame.width * scale))
         new_h = max(1, round(frame.height * scale))
         scaled = frame.resize((new_w, new_h), Image.LANCZOS)
 
         canvas = Image.new('RGBA', (out_w, out_h), (0, 0, 0, 0))
 
-        # Place the head's centre at HEAD_CENTRE_X and its top at HEAD_TOP_Y.
         head_centre_src = (head_l + head_r) / 2
         px = round(out_w * HEAD_CENTRE_X - head_centre_src * scale)
-        py = round(out_h * HEAD_TOP_Y - head_top * scale)
+        # Pin the subject's feet to the bottom edge.
+        py = round(out_h - bbox[3] * scale)
 
         canvas.paste(scaled, (px, py), scaled)
 
@@ -109,4 +115,4 @@ for tier, cfg in TIERS.items():
 
     print(f'{tier}: {out_w}x{out_h}  {len(files)} frames  {total / 1024 / 1024:.2f} MB')
 
-print('all frames normalised on head width and validated')
+print('portrait frames generated and validated')

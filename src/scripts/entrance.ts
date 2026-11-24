@@ -98,10 +98,13 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
     const { width, height } = canvas;
     if (width < 2 || height < 2) return;
 
-    // Fit the height and anchor to the bottom: the head sits at the top of the
-    // crop, so vertical cropping would remove it. The portrait has its own
-    // column, so no text can overlap it.
-    const scale = Math.min(width / bitmap.width, height / bitmap.height);
+    // Fill the box and pin the subject's feet to the bottom edge.
+    //
+    // The frames are portrait and already normalised on head width, so a cover
+    // fit crops almost nothing. Anchoring to the bottom means the figure always
+    // stands on the same line, whatever the viewport height — no dead space
+    // below, and no vertical drift as the box resizes.
+    const scale = Math.max(width / bitmap.width, height / bitmap.height);
     const w = bitmap.width * scale;
     const h = bitmap.height * scale;
     const x = (width - w) / 2;
