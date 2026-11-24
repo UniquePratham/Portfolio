@@ -33,7 +33,7 @@ interface SignatureOptions {
  * whole signature takes about 2.5-3s — a natural hand speed. Slower reads as
  * sluggish, faster reads as a machine.
  */
-const WRITE_SPEED = 1.15;
+const WRITE_SPEED = 3.1;
 /** How long a pen lift between strokes takes, in ms. */
 const LIFT_MS = 110;
 /** How long the finished signature holds before it fades, in ms. */
@@ -146,14 +146,81 @@ export function initSignature({ canvas, src, reducedMotion }: SignatureOptions):
     return true;
   }
 
-  /** Where the ink sits inside the canvas box. Anchored to the bottom, so the
-   *  extra height above it is room for the pen. */
+  /**
+   * The pen's scale, tied to the ink's height so it stays proportional at every
+   * viewport. The pen is 80 units tall, so `inkH / 110` makes it about 0.73x the
+   * signature's height — present, but not dominating it.
+   */
+  function penScaleFor(inkH: number): number {
+    return Math.max(0.7, Math.min(1.5, inkH / 110));
+  }
+
+  /**
+   * The pen's footprint in canvas px, measured from the nib.
+   *
+   * Derived from the drawing constants in `drawPen()` and rotated by
+   * `PEN_ANGLE`, so the ink box can be inset by exactly the room the pen needs.
+   * Hard-coding these numbers is how the hand ended up cropped: the barrel and
+   * hand reach ~89 units to the right of the nib, not the ~36 that looked
+   * plausible.
+   */
+  function penExtent(s: number) {
+    // Local bbox of everything `drawPen()` paints, nib at the origin: the hand
+    // (palm, wrist and fingers, all above the nib) plus the barrel.
+    const x0 = -6;
+    const x1 = 50;
+    const y0 = -80;
+    const y1 = 6;
+    const th = Math.PI * 0.5 - PEN_ANGLE;
+    const cos = Math.cos(th);
+    const sin = Math.sin(th);
+    let left = 0;
+    let right = 0;
+    let top = 0;
+    let bottom = 0;
+    for (const x of [x0, x1]) {
+      for (const y of [y0, y1]) {
+        const rx = x * cos - y * sin;
+        const ry = x * sin + y * cos;
+        left = Math.max(left, -rx);
+        right = Math.max(right, rx);
+        top = Math.max(top, -ry);
+        bottom = Math.max(bottom, ry);
+      }
+    }
+    return { left: left * s, right: right * s, top: top * s, bottom: bottom * s };
+  }
+
+  /**
+   * Where the ink sits inside the canvas box.
+   *
+   * The pen's footprint scales with the ink's height, so the ink height that
+   * fits is solved by iteration: start from a guess, measure the pen at that
+   * size, then shrink the ink to what is left. Three passes converge to well
+   * under a pixel. The ink is anchored to the bottom so the signature sits on
+   * the footer rule.
+   */
   function inkBox() {
     if (!image) return { x: 0, y: 0, w: 0, h: 0 };
-    const scale = Math.min(cssWidth / image.width, cssHeight / image.height);
-    const w = image.width * scale;
-    const h = image.height * scale;
-    return { x: (cssWidth - w) / 2, y: cssHeight - h, w, h };
+
+    const aspect = image.width / image.height;
+    let inkH = Math.min(cssWidth / (aspect + 1), cssHeight / 2);
+
+    for (let i = 0; i < 3; i += 1) {
+      const pad = penExtent(penScaleFor(inkH));
+      const availW = Math.max(1, cssWidth - pad.left - pad.right);
+      const availH = Math.max(1, cssHeight - pad.top - pad.bottom);
+      inkH = Math.min(availW / aspect, availH);
+    }
+
+    const pad = penExtent(penScaleFor(inkH));
+    const availW = Math.max(1, cssWidth - pad.left - pad.right);
+    const w = inkH * aspect;
+    const h = inkH;
+
+    const x = pad.left + (availW - w) / 2;
+    const y = cssHeight - pad.bottom - h;
+    return { x, y, w, h };
   }
 
   /** Map a normalised path point into canvas space. */
@@ -273,137 +340,72 @@ export function initSignature({ canvas, src, reducedMotion }: SignatureOptions):
    * holds the pen steady and moves the arm, so rotating to the path tangent made
    * the pen dance.
    */
-  function drawPen(x: number, y: number, alpha: number): void {
-    // Scale the pen to the ink's height. The pen is ~80 units tall, so this
-    // makes it roughly 1.1x the ink's height — present but not dominating the
-    // signature.
-    const scale = Math.max(0.7, Math.min(1.5, cssHeight / 78));
-
+  function drawPen(x: number, y: number, alpha: number, scale: number): void {
     ctx.save();
     ctx.translate(x, y);
     // The pen is drawn with its tip at the origin and its body along -y. A pen
-    // trails BEHIND the direction of travel, so -y must map to `PEN_ANGLE + PI`.
-    // `rotate(PEN_ANGLE - PI/2)` does that: (0,-1) -> (-cos, -sin).
-    ctx.rotate(PEN_ANGLE - Math.PI * 0.5);
+    // trails BEHIND the direction of travel, so the barrel must lean back over
+    // the written area. `rotate(PI/2 - PEN_ANGLE)` maps (0,-1) to
+    // (+cos, -sin) — up and to the RIGHT, which is a right-handed grip. The
+    // opposite rotation is a left-hander's pose and reads as wrong.
+    ctx.rotate(Math.PI * 0.5 - PEN_ANGLE);
     ctx.scale(scale, scale);
     ctx.globalAlpha = alpha;
 
-    // --- Hand ------------------------------------------------------------
-    // Drawn first so the pen sits in front of it. A right hand seen from the
-    // back, gripping the pen: the index finger runs along the barrel, the thumb
-    // pinches the grip from the other side, and the remaining three fingers curl
-    // underneath. Drawn as one silhouette plus shading, so it reads as a hand at
-    // footer size instead of a collection of blobs.
+    // --- Hand, behind the pen --------------------------------------------
+    // A hand gripping a pen wraps AROUND the barrel: the palm sits behind it, the
+    // index finger and thumb in front. Drawing the whole hand behind the pen is
+    // what made it read as a mitten stuck to a floating pen.
+    //
+    // Everything is kept ABOVE the nib (y < 0). The ink is written at y = 0, so
+    // any part of the hand below that covers the signature — which is exactly
+    // what happened when the palm was allowed to hang past the tip.
     ctx.save();
-    ctx.translate(1, -24);
-    ctx.scale(0.58, 0.58);
 
     const skin = '#c9a184';
     const skinLight = '#dcb99c';
     const skinMid = '#cfa88b';
-    const skinDark = '#b08a6b';
     const crease = 'rgba(112, 74, 50, 0.42)';
 
-    // --- Back of the hand and wrist, as one silhouette -------------------
+    // Palm and wrist as ONE mass. Drawing the wrist as a separate capsule made
+    // it read as a pointing finger.
     ctx.beginPath();
-    // Wrist, entering from the lower left.
-    ctx.moveTo(-30, 26);
-    ctx.quadraticCurveTo(-26, 10, -24, -2);
-    // Outer edge of the hand, rising to the knuckles.
-    ctx.quadraticCurveTo(-26, -18, -20, -30);
-    ctx.quadraticCurveTo(-13, -40, -2, -40);
-    // Knuckle ridge across the top.
-    ctx.quadraticCurveTo(8, -40, 13, -32);
-    // Down the index side to where it meets the pen.
-    ctx.quadraticCurveTo(17, -24, 15, -14);
-    ctx.quadraticCurveTo(13, -4, 8, 4);
-    // The curled fingers, as three soft lobes.
-    ctx.quadraticCurveTo(2, 12, -4, 14);
-    ctx.quadraticCurveTo(-10, 16, -14, 20);
-    ctx.quadraticCurveTo(-20, 24, -30, 26);
+    ctx.moveTo(46, 6);
+    // Outer edge of the wrist, rising into the back of the hand.
+    ctx.quadraticCurveTo(42, -14, 34, -30);
+    ctx.quadraticCurveTo(26, -44, 14, -44);
+    ctx.quadraticCurveTo(6, -42, 5, -32);
+    ctx.quadraticCurveTo(4, -22, 7, -14);
+    // Lower edge of the palm, back out to the wrist.
+    ctx.quadraticCurveTo(14, -6, 26, -2);
+    ctx.quadraticCurveTo(38, 2, 46, 6);
     ctx.closePath();
     ctx.fillStyle = skin;
     ctx.fill();
 
-    // --- Index finger, along the barrel ---------------------------------
-    ctx.beginPath();
-    ctx.moveTo(-2, -6);
-    ctx.quadraticCurveTo(-10, -18, -9, -32);
-    ctx.quadraticCurveTo(-8, -43, 0, -43);
-    ctx.quadraticCurveTo(9, -42, 10, -31);
-    ctx.quadraticCurveTo(11, -19, 8, -6);
-    ctx.closePath();
-    ctx.fillStyle = skinLight;
-    ctx.fill();
-
-    // --- Thumb, pinching the grip from the far side ---------------------
-    ctx.beginPath();
-    ctx.moveTo(6, -4);
-    ctx.quadraticCurveTo(18, -8, 21, -19);
-    ctx.quadraticCurveTo(23, -27, 16, -28);
-    ctx.quadraticCurveTo(10, -28, 8, -19);
-    ctx.quadraticCurveTo(7, -11, 6, -4);
-    ctx.closePath();
-    ctx.fillStyle = skinLight;
-    ctx.fill();
-
-    // --- Curled middle, ring and little fingers -------------------------
-    // Each is a rounded lobe with a crease, so the hand reads as gripping.
-    const fingers = [
-      { x: -13, y: 2, rx: 6.2, ry: 4.6, rot: -0.30, tone: skinMid },
-      { x: -8, y: 8, rx: 5.8, ry: 4.3, rot: -0.22, tone: skinDark },
-      { x: -2, y: 12, rx: 5.2, ry: 3.9, rot: -0.14, tone: skinDark },
-    ];
-    for (const f of fingers) {
+    // Curled middle, ring and little fingers, tucked UNDER the barrel — they
+    // point left and down, toward the nib, which is what a pen grip looks like.
+    ctx.lineCap = 'round';
+    for (const f of [
+      { x0: 12, y0: -12, x1: 3, y1: -7, w: 7.5 },
+      { x0: 20, y0: -10, x1: 11, y1: -4, w: 7.5 },
+      { x0: 28, y0: -9, x1: 19, y1: -2, w: 7 },
+    ]) {
       ctx.beginPath();
-      ctx.ellipse(f.x, f.y, f.rx, f.ry, f.rot, 0, Math.PI * 2);
-      ctx.fillStyle = f.tone;
-      ctx.fill();
-      // Crease between the fingers.
-      ctx.beginPath();
-      ctx.moveTo(f.x - f.rx * 0.7, f.y - f.ry * 0.5);
-      ctx.quadraticCurveTo(f.x, f.y - f.ry * 0.9, f.x + f.rx * 0.7, f.y - f.ry * 0.5);
-      ctx.strokeStyle = crease;
-      ctx.lineWidth = 0.8;
+      ctx.moveTo(f.x0, f.y0);
+      ctx.lineTo(f.x1, f.y1);
+      ctx.lineWidth = f.w;
+      ctx.strokeStyle = skinMid;
       ctx.stroke();
     }
 
-    // --- Shading --------------------------------------------------------
-    // A soft shadow down the outer edge, so the hand has volume.
-    const shade = ctx.createLinearGradient(-30, 0, 16, 0);
-    shade.addColorStop(0, 'rgba(90, 58, 38, 0.30)');
-    shade.addColorStop(0.45, 'rgba(90, 58, 38, 0.06)');
-    shade.addColorStop(1, 'rgba(255, 235, 215, 0.10)');
+    // Palm crease, so the grip has depth.
     ctx.beginPath();
-    ctx.moveTo(-30, 26);
-    ctx.quadraticCurveTo(-26, 10, -24, -2);
-    ctx.quadraticCurveTo(-26, -18, -20, -30);
-    ctx.quadraticCurveTo(-13, -40, -2, -40);
-    ctx.quadraticCurveTo(8, -40, 13, -32);
-    ctx.quadraticCurveTo(17, -24, 15, -14);
-    ctx.quadraticCurveTo(13, -4, 8, 4);
-    ctx.quadraticCurveTo(2, 12, -4, 14);
-    ctx.quadraticCurveTo(-10, 16, -14, 20);
-    ctx.quadraticCurveTo(-20, 24, -30, 26);
-    ctx.closePath();
-    ctx.fillStyle = shade;
-    ctx.fill();
-
-    // Knuckle creases across the back of the hand.
+    ctx.moveTo(10, -26);
+    ctx.quadraticCurveTo(18, -32, 27, -28);
+    ctx.lineWidth = 1.5;
     ctx.strokeStyle = crease;
-    ctx.lineWidth = 0.9;
-    for (let i = 0; i < 3; i += 1) {
-      ctx.beginPath();
-      ctx.moveTo(-16 + i * 7, -26 + i * 1.5);
-      ctx.quadraticCurveTo(-12 + i * 7, -29 + i * 1.5, -8 + i * 7, -26 + i * 1.5);
-      ctx.stroke();
-    }
-
-    // Contact shadow where the hand meets the pen.
-    ctx.beginPath();
-    ctx.ellipse(2, -8, 11, 6, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(16, 26, 22, 0.20)';
-    ctx.fill();
+    ctx.stroke();
 
     ctx.restore();
 
@@ -464,6 +466,40 @@ export function initSignature({ canvas, src, reducedMotion }: SignatureOptions):
     ctx.fillStyle = INK;
     ctx.fill();
 
+    // --- Fingers in front of the barrel ----------------------------------
+    // The index finger lies along the near side of the barrel and the thumb
+    // crosses it lower down. Drawn AFTER the pen so they overlap it — that
+    // overlap is what makes the hand read as gripping rather than resting
+    // behind.
+    ctx.save();
+    ctx.lineCap = 'round';
+
+    // Index finger, lying along the near side of the barrel.
+    ctx.beginPath();
+    ctx.moveTo(8, -22);
+    ctx.quadraticCurveTo(5, -32, 3, -42);
+    ctx.lineWidth = 8.5;
+    ctx.strokeStyle = skinLight;
+    ctx.stroke();
+
+    // Thumb, crossing the grip from the near side.
+    ctx.beginPath();
+    ctx.moveTo(10, -16);
+    ctx.quadraticCurveTo(3, -20, -1, -28);
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = skinLight;
+    ctx.stroke();
+
+    // Crease where the thumb meets the index finger.
+    ctx.beginPath();
+    ctx.moveTo(6, -27);
+    ctx.quadraticCurveTo(2, -30, -1, -28);
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = crease;
+    ctx.stroke();
+
+    ctx.restore();
+
     ctx.restore();
   }
 
@@ -474,6 +510,10 @@ export function initSignature({ canvas, src, reducedMotion }: SignatureOptions):
     if (alpha <= 0) return;
 
     const box = inkBox();
+
+    // Publish the ink rect so tests can compare against the real geometry
+    // instead of re-deriving it and silently drifting from the implementation.
+    canvas.dataset.inkBox = `${box.x},${box.y},${box.w},${box.h}`;
 
     // 1. Draw the ink mask into an offscreen buffer, tinted to the accent.
     //    Working offscreen keeps the mask and the travelled band separate, so
@@ -511,10 +551,11 @@ export function initSignature({ canvas, src, reducedMotion }: SignatureOptions):
     ctx.globalAlpha = 1;
 
     // 4. The pen, at the leading point. It is drawn during a lift too, so it
-    //    visibly travels to the next stroke instead of teleporting.
+    //    visibly travels to the next stroke instead of teleporting. Full alpha
+    //    throughout: a real hand does not fade out when it lifts the pen.
     if (showPen && elapsed > 0 && elapsed < WRITE_MS) {
       const pen = penAt(elapsed, box);
-      if (pen) drawPen(pen.x, pen.y, pen.lifted ? alpha * 0.55 : alpha);
+      if (pen) drawPen(pen.x, pen.y, alpha, penScaleFor(box.h));
     }
   }
 

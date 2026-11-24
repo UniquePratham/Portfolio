@@ -1927,11 +1927,15 @@
 }
 
 .footer__sign canvas {
-  width: clamp(11rem, 20vw, 17rem);
-  /* Taller than the ink's aspect so the pen has room above the stroke. The ink
-     is anchored to the bottom of this box by the canvas code, and the extra
-     height is the pen's headroom. */
-  aspect-ratio: 1183 / 900;
+  width: clamp(13rem, 24vw, 20rem);
+  /* The canvas must be wide enough for the ink PLUS the pen's footprint. The pen
+     is held at 52 degrees, so its barrel and hand reach ~89 units to the right
+     of the nib and ~67 units above it — sizing the canvas to the ink alone left
+     the hand cropped at the edge. This aspect is the ink's aspect plus that
+     footprint, solved so the ink keeps its natural size. `inkBox()` in
+     signature.ts derives the same footprint from the drawing constants; change
+     one and the other must follow. */
+  aspect-ratio: 1.9445;
   display: block;
   /* The ink is drawn in the accent colour by the canvas itself, so no filter is
      needed. A CSS filter here would have to invert white ink into a tint, which
