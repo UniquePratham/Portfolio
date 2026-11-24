@@ -64,9 +64,11 @@ Initial JS is **26.8 kB gzipped**; CSS is **6.9 kB gzipped**.
 │   │   └── contours.json   # generated terrain
 │   ├── scripts/
 │   │   ├── sections.ts     # one template per section
-│   │   ├── carousel.ts     # 3D project carousel + accordions
+│   │   ├── carousel.ts     # globe carousel + accordions
+│   │   ├── globe.ts        # wireframe sphere behind the carousel
 │   │   ├── atlas.ts        # SVG terrain + markers
 │   │   ├── palette.ts      # ⌘K command palette
+│   │   ├── signature.ts    # footer signing animation
 │   │   └── entrance.ts     # skippable portrait scrub
 │   └── styles/
 │       ├── tokens.css      # palette, type scale, primitives
@@ -74,10 +76,11 @@ Initial JS is **26.8 kB gzipped**; CSS is **6.9 kB gzipped**.
 ├── public/
 │   ├── frames/             # 121-frame portrait sequence
 │   ├── work/               # project screenshots
+│   ├── signature.png       # footer signature mask
 │   ├── og.png              # social card
 │   ├── robots.txt
 │   └── sitemap.xml
-└── _tools/                 # generators (not shipped)
+└── _tools/                 # asset generators (not shipped)
 ```
 
 ## Routes
@@ -98,19 +101,27 @@ Every section is a real anchor, so links are shareable and the back button works
 
 ## The project carousel
 
-Projects sit on a cylinder: each card is rotated around Y and pushed back in Z,
-so the active card faces the viewer and its neighbours recede. Only the active
-card is interactive; the rest are `inert` and dimmed.
+Projects orbit a wireframe globe. The cards ride a cylinder — each one rotated
+around Y and offset along X — while a canvas globe behind them draws meridians,
+parallels and one marker per project. Both are driven by the same rotation value,
+so the cards and the sphere can never disagree.
 
-Input: arrow buttons, dots, keyboard (arrows, Home/End), pointer drag, and
-horizontal wheel. Every path funnels through one `goTo`, so the state cannot
-desync. Under `prefers-reduced-motion` the 3D is dropped entirely and the cards
-become a plain stack.
+Clicking a neighbour card brings it to the front; the active card's own controls
+keep their normal behaviour. Input: arrow buttons, dots, keyboard (arrows,
+Home/End), pointer drag, and horizontal wheel. Every path funnels through one
+`goTo`, so the state cannot desync. Under `prefers-reduced-motion` the 3D is
+dropped entirely and the cards become a plain stack.
 
 Each card carries an accordion with the full case study — problem, approach,
 role, architecture, decisions, outcomes, links. Opening it grows the card to the
 stage height and shrinks the screenshot, so the panel gets real room instead of a
 sliver.
+
+## The footer signature
+
+The signature is a single PNG mask, revealed along its own path so it reads as a
+pen writing rather than a sliding window. It writes, holds, fades, and repeats.
+Under `prefers-reduced-motion` it is drawn once, static.
 
 ## Design
 
@@ -169,9 +180,16 @@ Project: `uniquepratham-portfolio` (see `.firebaserc`).
 ## Regenerating assets
 
 ```bash
-python _tools/gen_contours.py   # terrain -> src/data/contours.json
-python _tools/gen_og.py         # social card -> public/og.png
+python _tools/gen_contours.py        # terrain -> src/data/contours.json
+python _tools/gen_og.py              # social card -> public/og.png
+python _tools/gen_signature.py       # Signature.jpg -> public/signature.png
+python _tools/gen_frames_fullbody.py # portrait frames -> public/frames/
 ```
+
+`gen_frames_fullbody.py` also hashes the generated frame set into
+`src/scripts/frames-version.ts`. The frames are served `immutable`, so every URL
+carries that hash — without it a returning visitor keeps the old frames for a
+year and the page paints a mix of old and new.
 
 ## Content provenance
 

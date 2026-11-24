@@ -13,6 +13,7 @@ import { initPalette } from './scripts/palette';
 import { initEntrance } from './scripts/entrance';
 import { initCarousel } from './scripts/carousel';
 import { initGlobe } from './scripts/globe';
+import { initSignature } from './scripts/signature';
 import {
   renderAtlas,
   renderWork,
@@ -398,3 +399,17 @@ document.querySelectorAll<HTMLElement>('[data-scroll-to-atlas]').forEach((el) =>
 
 const year = document.getElementById('year');
 if (year) year.textContent = String(new Date().getFullYear());
+
+/* =========================================================================
+   Footer signature — a pen writing the name, on a loop
+   ========================================================================= */
+
+const signatureCanvas = document.getElementById('footer-signature') as HTMLCanvasElement | null;
+
+if (signatureCanvas) {
+  initSignature({
+    canvas: signatureCanvas,
+    src: '/signature.png',
+    reducedMotion,
+  });
+}

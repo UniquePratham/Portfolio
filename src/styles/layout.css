@@ -708,7 +708,11 @@
   margin-top: var(--space-l);
   /* The 3D ring places cards outside the viewport; clip them so they cannot
      create a horizontal scrollbar. `clip` keeps the vertical overflow visible
-     for the accordion. */
+     for the accordion.
+
+     The clip box also clips hit-testing, so a neighbour whose box extends past
+     this edge is only clickable inside it. The ring radius is derived from the
+     card width so the exposed band always falls inside this box. */
   overflow-x: clip;
   overflow-y: visible;
 }
@@ -741,9 +745,16 @@
   perspective: 1600px;
   perspective-origin: 50% 45%;
   transform-style: preserve-3d;
+  /* `pan-y` lets the page scroll vertically while the carousel takes horizontal
+     drags. `none` would block page scroll over the stage, which is worse. */
   touch-action: pan-y;
   cursor: grab;
   outline: none;
+  /* Dragging across the cards must not start a text selection: the browser
+     cancels the pointer stream as soon as a selection begins, so the drag dies
+     after the first move. */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .carousel__stage.is-dragging {
@@ -768,10 +779,26 @@
   overflow: hidden;
 }
 
+/* A neighbour is a target: clicking it brings it to the front. */
+.carousel__card[data-offset]:not([data-offset='0']) {
+  cursor: pointer;
+}
+
+.carousel__card[data-offset]:not([data-offset='0']):hover {
+  border-color: var(--rule-strong);
+}
+
 /* When the accordion is open the card grows to the stage height, so the panel
    gets the remaining space instead of a sliver. */
 .carousel__card.is-open {
   height: 100%;
+}
+
+/* A closed card is capped to the stage height. Without the cap a tall card
+   (long summary, four tags) overflows the stage and overlaps the controls
+   underneath it. */
+.carousel__card:not(.is-open) {
+  max-height: 100%;
 }
 
 .carousel__stage.is-dragging .carousel__card {
@@ -810,6 +837,9 @@
   object-fit: cover;
   object-position: top center;
   filter: saturate(0.92);
+  /* A native image drag fires `pointercancel` and kills the carousel drag. */
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .carousel__meta {
@@ -1095,6 +1125,8 @@
   }
 
   .carousel__card {
+    /* On a phone the stage is too narrow for a neighbour beside the active card,
+       so the card takes the full width and the arrows / drag turn the ring. */
     width: min(20rem, 84vw);
   }
 
@@ -1882,6 +1914,35 @@
 
 .footer a:hover {
   color: var(--accent);
+}
+
+/* The signature sits under the footer rule, aligned to the right so it reads as
+   a signature on a document rather than a logo. */
+.footer__sign {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: var(--space-s);
+  padding-top: var(--space-s);
+}
+
+.footer__sign canvas {
+  width: clamp(9rem, 16vw, 14rem);
+  height: auto;
+  aspect-ratio: 1183 / 436;
+  display: block;
+  /* The mask is white; tint it to the accent so it belongs to the palette. */
+  filter: invert(88%) sepia(28%) saturate(560%) hue-rotate(28deg) brightness(1.02);
+  opacity: 0.85;
+}
+
+.footer__sign-label {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding-bottom: 0.35rem;
 }
 
 /* --------------------------------------------------------------------------

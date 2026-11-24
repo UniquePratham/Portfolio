@@ -26,18 +26,16 @@ interface CarouselOptions {
 
 /** Longitude between adjacent cards, in degrees. */
 const LON_STEP = 42;
-/** Radius of the card ring, as a fraction of the stage width. A fixed px
- *  radius throws the neighbours off-screen on a phone. */
-const RING_RADIUS_RATIO = 0.46;
-/** How far each step back recedes, in px. */
-const DEPTH_STEP = 230;
+/** Vertical offset of the card ring, in px. Pushing the cards down leaves the
+ *  globe's upper hemisphere visible above them, which is what makes the
+ *  arrangement read as a planet rather than a flat row. Clamped per card so it
+ *  can never push a card past the stage. */
+const RING_Y = 90;
+/** Scale applied to a card one step from the active one. */
+const NEIGHBOUR_SCALE = 0.9;
 /** Cards beyond this many steps are visible. Three at a time reads clearly;
  *  five overlap into mush at any card width that fits the text. */
 const VISIBLE_RANGE = 1;
-/** Vertical offset of the card ring, in px. Pushing the cards down leaves the
- *  globe's upper hemisphere visible above them, which is what makes the
- *  arrangement read as a planet rather than a flat row. */
-const RING_Y = 90;
 
 const DEG = Math.PI / 180;
 
@@ -81,48 +79,73 @@ export function initCarousel({ root, stage, onActiveChange }: CarouselOptions): 
   }
 
   function layout(): void {
-    // The ring radius follows the stage width, so the neighbours stay on screen
-    // at every viewport instead of flying off on a phone.
     const stageWidth = stage.clientWidth || 1200;
-    const ringRadius = Math.max(220, stageWidth * RING_RADIUS_RATIO);
+    const stageHeight = stage.clientHeight || 760;
+
+    // The ring radius is derived from the CARD width, not the stage width.
+    // Deriving it from the stage let the neighbours tuck behind the active card
+    // on a wide viewport, because the card is a fixed max-width while the stage
+    // keeps growing.
+    //
+    // The neighbour's CENTRE lands at `sin(angle) * radius`, and its own
+    // projected half-width extends from there. To leave a visible sliver beside
+    // the active card, the radius must satisfy:
+    //     sin(angle) * radius - neighbourHalf >= activeHalf + exposed
+    // Solving for the radius is what keeps the neighbour tappable at every
+    // viewport; using `activeHalf + exposed` directly under-shoots by 1/sin.
+    // On a narrow stage there is no room for a neighbour beside the active card:
+    // the ring would have to push it off-screen. Below this width the carousel
+    // shows the active card only, and the arrows / drag are the affordance.
+    const showNeighbours = stageWidth >= 560;
+
+    const cardWidth = cards[0]?.offsetWidth || Math.min(480, stageWidth * 0.82);
+    const activeHalf = cardWidth * 0.5;
+    const neighbourHalf = cardWidth * 0.5 * NEIGHBOUR_SCALE;
+    const exposed = Math.min(96, Math.max(48, stageWidth * 0.2));
+    const ringRadius = showNeighbours
+      ? (activeHalf + neighbourHalf + exposed) / Math.sin(LON_STEP * DEG)
+      : 0;
 
     cards.forEach((card, i) => {
       const offset = offsetOf(i);
       const abs = Math.abs(offset);
-      const visible = abs <= VISIBLE_RANGE;
+      const visible = showNeighbours ? abs <= VISIBLE_RANGE : abs === 0;
 
-      // Position on the ring: longitude from the offset, and a depth step so
-      // the neighbours recede. A true sphere surface would place the second
-      // neighbour almost directly behind the first, which reads as overlapping
-      // cards rather than a ring; the depth step keeps them legible.
+      // Position on the ring: longitude from the offset. Depth comes from the
+      // scale and opacity, NOT from a negative z: a card at z < 0 sits behind
+      // the stage's own plane in a `preserve-3d` context, so the stage wins the
+      // hit-test and the neighbour becomes unclickable even though it is painted.
       const lon = offset * LON_STEP * DEG;
 
       const x = Math.sin(lon) * ringRadius;
-      const z = -abs * DEPTH_STEP;
 
       // Face outward from the ring's centre, so the active card is square-on
       // and its neighbours turn away.
       const rotateY = -lon / DEG;
 
-      const scale = 1 - abs * 0.1;
+      const scale = 1 - abs * (1 - NEIGHBOUR_SCALE);
       const opacity = visible ? 1 - abs * 0.42 : 0;
 
-      // An open card must fit the stage exactly, so it drops the ring offset.
-      // Otherwise the offset pushes its bottom past the stage and the case
-      // study is cut off.
+      // The ring offset must never push a card past the stage: the controls sit
+      // directly below it, so an overflowing card overlaps the arrows. Clamp the
+      // offset to the space actually left over.
       const isOpen = card.classList.contains('is-open');
-      const y = isOpen ? 0 : Math.min(RING_Y, stageWidth * 0.07);
+      const cardHeight = card.offsetHeight || 0;
+      const room = Math.max(0, (stageHeight - cardHeight) / 2);
+      const y = isOpen ? 0 : Math.min(RING_Y, room);
 
       card.style.transform =
         `translate(-50%, -50%) ` +
-        `translate3d(${x.toFixed(2)}px, ${y}px, ${z.toFixed(2)}px) ` +
+        `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) ` +
         `rotateY(${rotateY.toFixed(2)}deg) ` +
         `scale(${scale.toFixed(3)})`;
       card.style.opacity = String(Math.max(0, opacity));
       card.style.zIndex = String(100 - abs);
-      card.style.pointerEvents = offset === 0 ? 'auto' : 'none';
-      card.setAttribute('aria-hidden', String(offset !== 0));
-      card.toggleAttribute('inert', offset !== 0);
+      // Every visible card is clickable: clicking a neighbour brings it to the
+      // front. Hidden cards stay inert so they cannot be tabbed to.
+      card.style.pointerEvents = visible ? 'auto' : 'none';
+      card.setAttribute('aria-hidden', String(!visible));
+      card.toggleAttribute('inert', !visible);
       card.dataset.offset = String(offset);
     });
 
@@ -205,23 +228,38 @@ export function initCarousel({ root, stage, onActiveChange }: CarouselOptions): 
 
   /* --- Drag ------------------------------------------------------------ */
 
+  // Drag state lives on `window`, not on the stage. Capturing the pointer on the
+  // stage stops the move stream after the first event in some browsers, and a
+  // drag that leaves the stage must keep tracking anyway.
+  let pointerId = -1;
+
   on(stage, 'pointerdown', (event) => {
     const e = event as PointerEvent;
-    // Ignore drags that start on a control.
+    // A drag may start anywhere on the stage, including on a card — that is how
+    // a user naturally grabs the carousel. Only controls are excluded, because
+    // they need their own click.
     if ((e.target as HTMLElement).closest('button, a')) return;
-    dragging = true;
+    dragging = false;
     dragMoved = false;
     dragStartX = e.clientX;
     dragStartIndex = active;
-    stage.setPointerCapture(e.pointerId);
-    stage.classList.add('is-dragging');
+    pointerId = e.pointerId;
   });
 
-  on(stage, 'pointermove', (event) => {
-    if (!dragging) return;
+  on(window, 'pointermove', (event) => {
     const e = event as PointerEvent;
+    if (e.pointerId !== pointerId) return;
+
     const dx = e.clientX - dragStartX;
-    if (Math.abs(dx) > 6) dragMoved = true;
+
+    // Promote to a drag only past the threshold, so a click stays a click.
+    if (!dragging) {
+      if (Math.abs(dx) <= 6) return;
+      dragging = true;
+      dragMoved = true;
+      stage.classList.add('is-dragging');
+    }
+
     // One card per ~180px of travel.
     const shift = Math.round(-dx / 180);
     const target = dragStartIndex + shift;
@@ -229,15 +267,16 @@ export function initCarousel({ root, stage, onActiveChange }: CarouselOptions): 
   });
 
   const endDrag = (event: Event) => {
+    const e = event as PointerEvent;
+    if (e.pointerId !== pointerId) return;
+    pointerId = -1;
     if (!dragging) return;
     dragging = false;
     stage.classList.remove('is-dragging');
-    const e = event as PointerEvent;
-    if (stage.hasPointerCapture?.(e.pointerId)) stage.releasePointerCapture(e.pointerId);
   };
 
-  on(stage, 'pointerup', endDrag);
-  on(stage, 'pointercancel', endDrag);
+  on(window, 'pointerup', endDrag);
+  on(window, 'pointercancel', endDrag);
 
   // A drag must not also trigger a click on the card underneath.
   on(
@@ -248,7 +287,19 @@ export function initCarousel({ root, stage, onActiveChange }: CarouselOptions): 
         event.preventDefault();
         event.stopPropagation();
         dragMoved = false;
+        return;
       }
+
+      // Clicking a neighbour brings it to the front. The active card's own
+      // controls (accordion toggle, links) keep their normal behaviour.
+      const card = (event.target as HTMLElement | null)?.closest<HTMLElement>('.carousel__card');
+      if (!card) return;
+      const offset = Number(card.dataset.offset ?? '0');
+      if (offset === 0) return;
+      if ((event.target as HTMLElement).closest('button, a')) return;
+
+      event.preventDefault();
+      goTo(active + offset);
     },
     { capture: true },
   );
