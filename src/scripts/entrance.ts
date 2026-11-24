@@ -17,6 +17,8 @@
  * exactly and the subject's feet stay on the bottom edge at every viewport.
  */
 
+import { FRAME_VERSION } from './frames-version';
+
 interface EntranceOptions {
   canvas: HTMLCanvasElement;
   section: HTMLElement;
@@ -31,7 +33,10 @@ const TIER: 'desktop' | 'mobile' = window.matchMedia('(max-width: 47.99rem)').ma
   : 'desktop';
 
 function framePath(index: number): string {
-  return `/frames/${TIER}/f${String(index).padStart(4, '0')}.webp`;
+  // The frames are served `immutable`, so the URL must change when the bytes
+  // do. Without the version a returning visitor keeps the old frames for a
+  // year, and a mix of old and new frames reads as the portrait resizing.
+  return `/frames/${TIER}/f${String(index).padStart(4, '0')}.webp?v=${FRAME_VERSION}`;
 }
 
 export function initEntrance({ canvas, section, onReady }: EntranceOptions): void {

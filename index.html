@@ -30,7 +30,10 @@
     <meta name="twitter:image" content="https://uniquepratham-portfolio.web.app/og.png" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preload" as="image" href="/frames/desktop/f0000.webp" />
+    <!-- The version is injected at build time from src/scripts/frames-version.ts.
+         The frames are served `immutable`, so an unversioned preload would
+         fetch a stale cached frame and paint it before the versioned one. -->
+    <link rel="preload" as="image" href="/frames/desktop/f0000.webp?v=__FRAME_VERSION__" />
 
     <script type="application/ld+json">
       {
