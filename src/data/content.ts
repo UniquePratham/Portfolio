@@ -86,52 +86,6 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
-    slug: 'locally-uncensored',
-    title: 'Locally Uncensored',
-    discipline: 'ai',
-    year: '2026',
-    summary:
-      'A local-first AI desktop application for chat, agent mode, and image or video generation.',
-    problem:
-      'Most AI tooling assumes a cloud account and an API key. Running models on your own machine should not require Docker, a Python environment, or a network connection.',
-    approach:
-      'A single executable that detects which local inference backends are already installed and talks to them directly, so the app is a control surface rather than a runtime.',
-    role: 'Contributor — header responsiveness and layout stability across Chat, Create and Compare views.',
-    stack: ['TypeScript', 'Ollama', 'Desktop'],
-    outcomes: [
-      'Auto-detects 12 local backends',
-      'Ships as a single executable — no Docker, no cloud, no API keys',
-      'Merged upstream: 196 additions, 102 deletions across 4 files',
-    ],
-    decisions: [
-      {
-        title: 'Detect, do not bundle',
-        body: 'Shipping the inference runtime would multiply the download and pin users to one backend. Detecting what is already installed keeps the app small and lets people keep the stack they chose.',
-      },
-      {
-        title: 'Header as the hard part',
-        body: 'The contribution was layout stability in the header across three views. A header that reflows between modes makes the whole app feel unreliable, so the fix was structural rather than cosmetic.',
-      },
-    ],
-    links: [
-      { label: 'Live', href: 'https://locallyuncensored.com' },
-      { label: 'Source', href: 'https://github.com/PurpleDoubleD/locally-uncensored' },
-      { label: 'My pull request', href: 'https://github.com/PurpleDoubleD/locally-uncensored/pull/60' },
-    ],
-    image: {
-      src: '/work/locally-uncensored.webp',
-      alt: 'Locally Uncensored landing page with a Windows download panel',
-      width: 1600,
-      height: 1000,
-    },
-    architecture: [
-      { label: 'Desktop shell', detail: 'Single executable, local state' },
-      { label: 'Backend detection', detail: 'Probe 12 local inference runtimes' },
-      { label: 'Chat / Create / Compare', detail: 'Three modes over one session model' },
-      { label: 'Local models', detail: 'Ollama and compatible backends' },
-    ],
-  },
-  {
     slug: 'tigergraph-fraud',
     title: 'TigerGraph Fraud Platform',
     discipline: 'ai',
@@ -513,7 +467,7 @@ export const CAPABILITIES: Capability[] = [
     items: [
       { name: 'PyTorch' },
       { name: 'Hugging Face' },
-      { name: 'Ollama', usedIn: 'Locally Uncensored' },
+      { name: 'Ollama', usedIn: 'ollama/ollama' },
       { name: 'GraphRAG', usedIn: 'TigerGraph Fraud Platform' },
       { name: 'Computer vision' },
     ],
@@ -622,7 +576,7 @@ export const DESTINATIONS: AtlasDestination[] = [
     x: 392,
     y: 118,
     hint: 'Applied AI, agents, and grounded inference',
-    contents: ['Locally Uncensored', 'TigerGraph Fraud Platform', 'GraphRAG'],
+    contents: ['TigerGraph Fraud Platform', 'GraphRAG', 'Agentic investigation'],
     href: '#work',
   },
   {

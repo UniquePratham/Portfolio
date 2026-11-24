@@ -64,6 +64,7 @@ Initial JS is **26.8 kB gzipped**; CSS is **6.9 kB gzipped**.
 │   │   └── contours.json   # generated terrain
 │   ├── scripts/
 │   │   ├── sections.ts     # one template per section
+│   │   ├── carousel.ts     # 3D project carousel + accordions
 │   │   ├── atlas.ts        # SVG terrain + markers
 │   │   ├── palette.ts      # ⌘K command palette
 │   │   └── entrance.ts     # skippable portrait scrub
@@ -86,8 +87,7 @@ Every section is a real anchor, so links are shareable and the back button works
 | Anchor | Content |
 | --- | --- |
 | `#atlas` | The map |
-| `#work` | Project index with discipline filters |
-| `#project-:slug` | Case study — problem, approach, architecture, decisions |
+| `#work` | 3D carousel of project cards, each with an accordion case study |
 | `#open-source` | Merged PRs with diff sizes, plus collaborations |
 | `#security` | CTF record |
 | `#notes`, `#note-:slug` | Field notes |
@@ -95,6 +95,22 @@ Every section is a real anchor, so links are shareable and the back button works
 | `#capabilities` | Capability map, grouped by domain |
 | `#archive` | Earlier work |
 | `#contact` | Contact |
+
+## The project carousel
+
+Projects sit on a cylinder: each card is rotated around Y and pushed back in Z,
+so the active card faces the viewer and its neighbours recede. Only the active
+card is interactive; the rest are `inert` and dimmed.
+
+Input: arrow buttons, dots, keyboard (arrows, Home/End), pointer drag, and
+horizontal wheel. Every path funnels through one `goTo`, so the state cannot
+desync. Under `prefers-reduced-motion` the 3D is dropped entirely and the cards
+become a plain stack.
+
+Each card carries an accordion with the full case study — problem, approach,
+role, architecture, decisions, outcomes, links. Opening it grows the card to the
+stage height and shrinks the screenshot, so the panel gets real room instead of a
+sliver.
 
 ## Design
 

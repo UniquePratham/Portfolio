@@ -1,15 +1,21 @@
-"""Regenerate both frame tiers with the subject scale normalised.
+"""Regenerate both frame tiers, normalised on the subject's head.
 
-The source footage is a moving camera: the subject's alpha bounding box varies
-from 1472 px to 2298 px tall across the sequence, a 56% swing. Painting those
-frames at a fixed canvas size makes the portrait visibly grow and shrink as you
-scroll.
+The source footage is a moving camera and a moving subject. Two things vary:
 
-This script measures each frame's subject box, then scales and re-centres every
-frame so the subject occupies a constant height and a constant horizontal
-centre. The pose still changes; only the scale is held steady.
+  * the full silhouette, because the arms move (2150-2606 px wide, a 21% swing)
+  * the camera distance, which changes the subject's overall scale
+
+Normalising on the full silhouette fails: the arms dominate the bounding box, so
+a frame with arms out gets scaled down and the figure appears to shrink. The head
+is the stable anatomical anchor — its width varies only 836-864 px (3%) across
+the sequence.
+
+So each frame is scaled so the *head* is a constant width, then positioned so the
+head sits at a constant point on the canvas. The pose still changes; the figure's
+apparent size does not.
 """
 from PIL import Image
+import numpy as np
 import os
 import glob
 
@@ -17,9 +23,14 @@ SRC = r'C:\Users\gargp\Downloads\Portfolio\_srcframes'
 OUT = r'C:\Users\gargp\Downloads\Portfolio\public\frames'
 
 OUT_W, OUT_H = 1554, 1000
-SUBJECT_H = 940          # constant subject height in the output
-SUBJECT_CENTRE_X = 0.5   # horizontal centre, as a fraction of OUT_W
-SUBJECT_BOTTOM = 0.99    # subject's feet sit just above the bottom edge
+
+# Target head width in the output, and where the head's centre sits.
+HEAD_W = 300
+HEAD_CENTRE_X = 0.5     # fraction of OUT_W
+HEAD_TOP_Y = 0.06       # fraction of OUT_H
+
+# The head occupies the top fraction of the subject's bounding box.
+HEAD_BAND = 0.22
 
 TIERS = {
     'desktop': dict(size=(OUT_W, OUT_H), quality=78),
@@ -29,15 +40,28 @@ TIERS = {
 files = sorted(glob.glob(os.path.join(SRC, '*.webp')))
 assert len(files) == 121, f'expected 121 source frames, found {len(files)}'
 
-# Pass 1: measure every subject box.
-boxes = []
-for f in files:
-    with Image.open(f) as im:
-        boxes.append(im.convert('RGBA').split()[-1].getbbox())
 
-missing = [i for i, b in enumerate(boxes) if b is None]
-if missing:
-    raise SystemExit(f'frames with no opaque pixels: {missing}')
+def measure(path):
+    """Return (bbox, head_left, head_right, head_top) for one frame."""
+    with Image.open(path) as im:
+        rgba = im.convert('RGBA')
+    alpha = np.asarray(rgba.split()[-1])
+    bbox = rgba.split()[-1].getbbox()
+    if bbox is None:
+        raise SystemExit(f'no opaque pixels in {path}')
+
+    x0, y0, x1, y1 = bbox
+    head_bottom = y0 + max(1, int((y1 - y0) * HEAD_BAND))
+    band = alpha[y0:head_bottom, :]
+    cols = np.where(band.max(axis=0) > 12)[0]
+    if len(cols) == 0:
+        raise SystemExit(f'no head pixels in {path}')
+
+    return bbox, int(cols[0]), int(cols[-1]), y0
+
+
+# Pass 1: measure every frame.
+measurements = [measure(f) for f in files]
 
 for tier, cfg in TIERS.items():
     out_dir = os.path.join(OUT, tier)
@@ -48,32 +72,28 @@ for tier, cfg in TIERS.items():
     out_w, out_h = cfg['size']
     total = 0
 
-    for i, (f, box) in enumerate(zip(files, boxes)):
+    for i, (f, (bbox, head_l, head_r, head_top)) in enumerate(zip(files, measurements)):
         with Image.open(f) as im:
             frame = im.convert('RGBA')
 
-        subject = frame.crop(box)
-        sw, sh = subject.size
+        head_w = head_r - head_l
+        if head_w <= 0:
+            raise SystemExit(f'degenerate head width in {f}')
 
-        # Scale so the subject is exactly SUBJECT_H tall in the output.
-        scale = SUBJECT_H / sh
-        new_w = max(1, round(sw * scale))
-        new_h = max(1, round(sh * scale))
-        subject = subject.resize((new_w, new_h), Image.LANCZOS)
+        # Scale so the head is HEAD_W wide in the output.
+        scale = HEAD_W / head_w
+        new_w = max(1, round(frame.width * scale))
+        new_h = max(1, round(frame.height * scale))
+        scaled = frame.resize((new_w, new_h), Image.LANCZOS)
 
         canvas = Image.new('RGBA', (out_w, out_h), (0, 0, 0, 0))
 
-        px = round(out_w * SUBJECT_CENTRE_X - new_w / 2)
-        py = round(out_h * SUBJECT_BOTTOM - new_h)
+        # Place the head's centre at HEAD_CENTRE_X and its top at HEAD_TOP_Y.
+        head_centre_src = (head_l + head_r) / 2
+        px = round(out_w * HEAD_CENTRE_X - head_centre_src * scale)
+        py = round(out_h * HEAD_TOP_Y - head_top * scale)
 
-        # If the subject is wider than the canvas, crop it symmetrically.
-        if new_w > out_w:
-            overflow = (new_w - out_w) // 2
-            subject = subject.crop((overflow, 0, overflow + out_w, new_h))
-            new_w = out_w
-            px = 0
-
-        canvas.paste(subject, (px, py), subject)
+        canvas.paste(scaled, (px, py), scaled)
 
         path = os.path.join(out_dir, f'f{i:04d}.webp')
         canvas.save(path, 'WEBP', quality=cfg['quality'], method=6)
@@ -89,4 +109,4 @@ for tier, cfg in TIERS.items():
 
     print(f'{tier}: {out_w}x{out_h}  {len(files)} frames  {total / 1024 / 1024:.2f} MB')
 
-print('all frames normalised and validated')
+print('all frames normalised on head width and validated')

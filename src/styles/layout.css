@@ -687,6 +687,394 @@
 }
 
 /* --------------------------------------------------------------------------
+   3D project carousel
+   -------------------------------------------------------------------------- */
+
+.carousel {
+  position: relative;
+  margin-top: var(--space-l);
+  /* The 3D ring places cards outside the viewport; clip them so they cannot
+     create a horizontal scrollbar. `clip` keeps the vertical overflow visible
+     for the accordion. */
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.carousel__stage {
+  position: relative;
+  height: clamp(38rem, 76vh, 50rem);
+  perspective: 1600px;
+  perspective-origin: 50% 45%;
+  transform-style: preserve-3d;
+  touch-action: pan-y;
+  cursor: grab;
+  outline: none;
+}
+
+.carousel__stage.is-dragging {
+  cursor: grabbing;
+}
+
+.carousel__card {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(30rem, 82vw);
+  margin-left: calc(min(30rem, 82vw) / -2);
+  transform-style: preserve-3d;
+  transition:
+    transform 620ms var(--ease-out),
+    opacity 620ms var(--ease-out);
+  will-change: transform, opacity;
+  background: var(--forest-800);
+  border: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* When the accordion is open the card grows to the stage height, so the panel
+   gets the remaining space instead of a sliver. */
+.carousel__card.is-open {
+  height: 100%;
+}
+
+.carousel__stage.is-dragging .carousel__card {
+  transition: none;
+}
+
+.carousel__card[data-offset='0'] {
+  border-color: var(--rule-strong);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.carousel__face {
+  display: grid;
+  grid-template-rows: auto auto;
+  min-height: 0;
+  flex: 0 0 auto;
+}
+
+.carousel__media {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--forest-700);
+  border-bottom: 1px solid var(--rule);
+  flex: none;
+  transition: aspect-ratio 420ms var(--ease-out);
+}
+
+/* With the accordion open, the image yields space to the case study. */
+.carousel__card.is-open .carousel__media {
+  aspect-ratio: 21 / 6;
+}
+
+.carousel__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: saturate(0.92);
+}
+
+.carousel__meta {
+  display: grid;
+  gap: var(--space-3xs);
+  padding: var(--space-s) var(--space-m) var(--space-m);
+}
+
+.carousel__index {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.carousel__title {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+}
+
+.carousel__summary {
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  line-height: 1.55;
+  margin-top: 0.15rem;
+}
+
+.carousel__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: var(--space-2xs);
+}
+
+/* Accordion */
+.carousel__accordion {
+  border-top: 1px solid var(--rule);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.acc__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+  padding: 0.7rem var(--space-m);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: color var(--dur-fast), background var(--dur-fast);
+  flex: none;
+}
+
+.acc__toggle:hover {
+  color: var(--accent);
+  background: rgba(196, 223, 115, 0.04);
+}
+
+.acc__toggle svg {
+  transition: transform var(--dur-base) var(--ease-out);
+  flex: none;
+}
+
+.acc__toggle[aria-expanded='true'] {
+  color: var(--accent);
+}
+
+.acc__toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.acc__panel {
+  overflow: hidden;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+}
+
+.acc__panel[hidden] {
+  display: none;
+}
+
+.acc__inner {
+  display: grid;
+  gap: var(--space-s);
+  padding: 0 var(--space-m) var(--space-m);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  width: 100%;
+  align-content: start;
+}
+
+.acc__block h4 {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 0.25rem;
+}
+
+.acc__block p {
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  line-height: 1.6;
+}
+
+.acc__arch {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  border-left: 1px solid var(--rule-strong);
+}
+
+.acc__arch li {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.35rem 0 0.35rem var(--space-2xs);
+  border-bottom: 1px solid var(--rule);
+}
+
+.acc__arch span {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  color: var(--text);
+}
+
+.acc__arch small {
+  font-size: var(--step--2);
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+
+.acc__decision {
+  padding-left: var(--space-2xs);
+  border-left: 1px solid var(--rule-strong);
+  margin-bottom: var(--space-2xs);
+}
+
+.acc__decision h4 {
+  font-family: var(--font-sans);
+  font-size: var(--step--1);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  margin-bottom: 0.15rem;
+}
+
+.acc__decision p {
+  font-size: var(--step--1);
+  line-height: 1.55;
+}
+
+.acc__outcomes {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.acc__outcomes li {
+  display: grid;
+  grid-template-columns: 0.9rem minmax(0, 1fr);
+  gap: 0.4rem;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.acc__outcomes li::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  margin-top: 0.5em;
+  background: var(--accent-dim);
+}
+
+.acc__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  padding-top: var(--space-2xs);
+  border-top: 1px solid var(--rule);
+  font-size: var(--step--1);
+}
+
+/* Controls */
+.carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-m);
+  margin-top: var(--space-m);
+}
+
+.carousel__arrow {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: none;
+  border: 1px solid var(--rule-strong);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast),
+    border-color var(--dur-fast),
+    background var(--dur-fast);
+}
+
+.carousel__arrow:hover {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.carousel__dots {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.carousel__dot {
+  width: 1.6rem;
+  height: 2px;
+  padding: 0;
+  border: 0;
+  background: var(--rule-strong);
+  cursor: pointer;
+  transition: background var(--dur-fast), width var(--dur-base) var(--ease-out);
+}
+
+.carousel__dot:hover {
+  background: var(--text-faint);
+}
+
+.carousel__dot[aria-selected='true'] {
+  background: var(--accent);
+  width: 2.6rem;
+}
+
+/* Reduced motion: no 3D, a plain stack of cards. */
+.carousel__stage.is-reduced {
+  height: auto;
+  perspective: none;
+  display: grid;
+  gap: var(--space-m);
+  cursor: default;
+}
+
+.carousel__stage.is-reduced .carousel__card {
+  position: relative;
+  left: auto;
+  margin-left: 0;
+  width: 100%;
+  transform: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.carousel__stage.is-reduced .carousel__card[aria-hidden='true'] {
+  display: none;
+}
+
+@media (max-width: 47.99rem) {
+  .carousel__stage {
+    height: clamp(30rem, 62vh, 38rem);
+    perspective: 1100px;
+  }
+
+  .carousel__card {
+    width: min(20rem, 84vw);
+    margin-left: calc(min(20rem, 84vw) / -2);
+  }
+
+  .carousel__media {
+    aspect-ratio: 16 / 10;
+  }
+
+  .carousel__card.is-open .carousel__media {
+    aspect-ratio: 21 / 7;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Destination pages
    -------------------------------------------------------------------------- */
 

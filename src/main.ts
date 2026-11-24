@@ -11,10 +11,10 @@ import Lenis from 'lenis';
 import { initAtlas } from './scripts/atlas';
 import { initPalette } from './scripts/palette';
 import { initEntrance } from './scripts/entrance';
+import { initCarousel } from './scripts/carousel';
 import {
   renderAtlas,
   renderWork,
-  renderCases,
   renderOpenSource,
   renderSecurity,
   renderNotes,
@@ -33,7 +33,6 @@ const outlet = document.getElementById('outlet') as HTMLElement;
 outlet.innerHTML = [
   renderAtlas(),
   renderWork(),
-  renderCases(),
   renderOpenSource(),
   renderSecurity(),
   renderNotes(),
@@ -276,22 +275,38 @@ if (revealTargets.length > 0) {
 }
 
 /* =========================================================================
-   Project filters — in place
+   Project filters — in place, and they drive the carousel
    ========================================================================= */
 
 const filterButtons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
-const projectRows = document.querySelectorAll<HTMLElement>('.project-row');
+const carouselRoot = document.getElementById('carousel');
+const carouselStage = document.getElementById('carousel-stage');
 const emptyState = document.querySelector<HTMLElement>('[data-empty]');
 
+let carouselCleanup: (() => void) | null = null;
+
+if (carouselRoot && carouselStage) {
+  carouselCleanup = initCarousel({ root: carouselRoot, stage: carouselStage });
+}
+
 function applyFilter(value: string): void {
+  const cards = document.querySelectorAll<HTMLElement>('.carousel__card');
   let shown = 0;
-  projectRows.forEach((row) => {
-    const match = value === 'all' || row.dataset.discipline === value;
-    row.hidden = !match;
+
+  cards.forEach((card) => {
+    const match = value === 'all' || card.dataset.discipline === value;
+    card.hidden = !match;
     if (match) shown += 1;
   });
+
   filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === value)));
   if (emptyState) emptyState.hidden = shown > 0;
+
+  // Rebuild the carousel over the visible cards so the ring stays coherent.
+  if (carouselRoot && carouselStage) {
+    carouselCleanup?.();
+    carouselCleanup = initCarousel({ root: carouselRoot, stage: carouselStage });
+  }
 }
 
 filterButtons.forEach((btn) => {

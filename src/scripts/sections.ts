@@ -112,7 +112,7 @@ export function renderAtlas(): string {
 }
 
 /* -------------------------------------------------------------------------
-   Work
+   Work — 3D carousel of accordion cards
    ------------------------------------------------------------------------- */
 
 export function renderWork(): string {
@@ -129,18 +129,82 @@ export function renderWork(): string {
     )
     .join('');
 
-  const rows = PROJECTS.map(
-    (p) => `
-      <a class="project-row" href="#project-${p.slug}" data-discipline="${p.discipline}">
-        <div>
-          <h3 class="project-row__title">${esc(p.title)} <small>${DISCIPLINE_LABEL[p.discipline]}</small></h3>
-          <div class="project-row__meta">${tags(p.stack.slice(0, 4))}</div>
+  const cards = PROJECTS.map((p, i) => {
+    const media = p.image
+      ? `<img src="${esc(p.image.src)}" alt="${esc(p.image.alt)}" width="${p.image.width}" height="${p.image.height}" loading="lazy" decoding="async" />`
+      : '';
+
+    const arch = p.architecture
+      ? `<ol class="acc__arch">
+           ${p.architecture
+             .map(
+               (layer) =>
+                 `<li><span>${esc(layer.label)}</span><small>${esc(layer.detail)}</small></li>`,
+             )
+             .join('')}
+         </ol>`
+      : '';
+
+    const decisions = p.decisions
+      .map(
+        (d) => `<div class="acc__decision">
+          <h4>${esc(d.title)}</h4>
+          <p>${esc(d.body)}</p>
+        </div>`,
+      )
+      .join('');
+
+    return `
+      <article class="carousel__card" data-index="${i}" data-discipline="${p.discipline}" data-slug="${p.slug}">
+        <div class="carousel__face">
+          <div class="carousel__media">${media}</div>
+          <div class="carousel__meta">
+            <p class="carousel__index">${String(i + 1).padStart(2, '0')} — ${DISCIPLINE_LABEL[p.discipline]}</p>
+            <h3 class="carousel__title">${esc(p.title)}</h3>
+            <p class="carousel__summary">${esc(p.summary)}</p>
+            <div class="carousel__tags">${tags(p.stack.slice(0, 4))}</div>
+          </div>
         </div>
-        <div>
-          <p class="project-row__summary">${esc(p.summary)}</p>
+
+        <div class="carousel__accordion">
+          <button class="acc__toggle" type="button" aria-expanded="false" aria-controls="acc-${p.slug}">
+            <span>Case study</span>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+
+          <div class="acc__panel" id="acc-${p.slug}" hidden>
+            <div class="acc__inner">
+              <div class="acc__block">
+                <h4>The problem</h4>
+                <p>${esc(p.problem)}</p>
+              </div>
+              <div class="acc__block">
+                <h4>Approach</h4>
+                <p>${esc(p.approach)}</p>
+              </div>
+              <div class="acc__block">
+                <h4>My role</h4>
+                <p>${esc(p.role)}</p>
+              </div>
+              ${arch ? `<div class="acc__block"><h4>Architecture</h4>${arch}</div>` : ''}
+              <div class="acc__block">
+                <h4>Decisions and trade-offs</h4>
+                ${decisions}
+              </div>
+              <div class="acc__block">
+                <h4>What it does</h4>
+                <ul class="acc__outcomes">
+                  ${p.outcomes.map((o) => `<li>${esc(o)}</li>`).join('')}
+                </ul>
+              </div>
+              <div class="acc__links">${links(p.links)}</div>
+            </div>
+          </div>
         </div>
-      </a>`,
-  ).join('');
+      </article>`;
+  }).join('');
 
   return `
     <section class="dest" id="work" aria-labelledby="work-title">
@@ -149,13 +213,40 @@ export function renderWork(): string {
           <p class="section-head__label">Selected work</p>
           <h2 class="section-head__title" id="work-title">Six projects, six problems</h2>
           <p class="section-head__lede">
-            Each one is live or has a public repository. The case studies below cover the
-            problem, the decisions, and what the thing actually does.
+            Drag, scroll or use the arrows to turn the carousel. Open a card to read the
+            problem, the decisions and what the thing actually does.
           </p>
         </div>
 
         <div class="filters" role="group" aria-label="Filter projects by discipline">${filters}</div>
-        <div class="project-index">${rows}</div>
+
+        <div class="carousel" id="carousel" data-active="0">
+          <div class="carousel__stage" id="carousel-stage">
+            ${cards}
+          </div>
+
+          <div class="carousel__controls">
+            <button class="carousel__arrow" type="button" data-dir="-1" aria-label="Previous project">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+
+            <div class="carousel__dots" role="tablist" aria-label="Projects">
+              ${PROJECTS.map(
+                (p, i) =>
+                  `<button class="carousel__dot" type="button" role="tab" data-goto="${i}" aria-label="${esc(p.title)}" aria-selected="${i === 0}"></button>`,
+              ).join('')}
+            </div>
+
+            <button class="carousel__arrow" type="button" data-dir="1" aria-label="Next project">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
         <p class="project-empty" data-empty hidden>No projects in this discipline.</p>
       </div>
     </section>`;
