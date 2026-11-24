@@ -119,9 +119,29 @@ sliver.
 
 ## The footer signature
 
-The signature is a single PNG mask, revealed along its own path so it reads as a
-pen writing rather than a sliding window. It writes, holds, fades, and repeats.
-Under `prefers-reduced-motion` it is drawn once, static.
+The signature is a PNG mask plus a traced stroke path. The ink is revealed along
+the pen's own travel, not with a left-to-right wipe — a signature doubles back on
+itself, so a vertical band uncovers the wrong parts first and the pen has nothing
+to follow.
+
+`_tools/gen_signature_path.py` builds the path: dilate the mask, skeletonise to a
+1px centreline, split at junctions into strokes, order them left to right, and
+simplify with Ramer–Douglas–Peucker. It writes `src/data/signature-path.json` and
+a debug overlay at `_shots/signature-trace.png` so the trace can be checked by
+eye. A single longest-path walk covers only ~60% of the ink; decomposing into
+strokes covers 100%.
+
+The animation strokes the travelled part of the path into an offscreen buffer and
+composites the tinted mask against it with `destination-in`. It must not use
+`ctx.clip()`: that clips to the path's *interior*, and the interior of an open
+polyline is a thin sliver, which silently cuts away most of the ink (measured:
+27% IoU with a clip, 88% with the composite). A fountain pen is drawn at the
+leading point, rotated to the path's tangent, trailing behind the direction of
+travel.
+
+The cycle starts when the footer scrolls into view, so the pen is actually seen
+rather than having finished before the visitor arrives. Under
+`prefers-reduced-motion` it is drawn once, static, with no pen.
 
 ## Design
 
@@ -183,6 +203,7 @@ Project: `uniquepratham-portfolio` (see `.firebaserc`).
 python _tools/gen_contours.py        # terrain -> src/data/contours.json
 python _tools/gen_og.py              # social card -> public/og.png
 python _tools/gen_signature.py       # Signature.jpg -> public/signature.png
+python _tools/gen_signature_path.py  # mask -> src/data/signature-path.json
 python _tools/gen_frames_fullbody.py # portrait frames -> public/frames/
 ```
 
