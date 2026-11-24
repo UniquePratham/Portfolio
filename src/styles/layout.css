@@ -180,13 +180,21 @@
 }
 
 /* The portrait column. Its height comes from the layout row, never from the
-   text beside it. */
+   text beside it.
+
+   The height is capped at 45.75rem (= 732px, the box height at a 900px-tall
+   viewport). Without the cap the box is `100svh - 10.5rem`, so the `contain`
+   scale — and therefore the figure's size — changed every time the window
+   height changed (resize, zoom): the portrait visibly grew and shrank.
+   With the cap the figure is a constant size for any viewport >= 900px tall,
+   bottom-anchored via `align-self: end`. Shorter viewports still shrink it to
+   fit, which is the only case where it must. */
 .entrance__portrait {
   position: relative;
   display: block;
   min-height: 0;
-  height: 100%;
-  align-self: stretch;
+  height: min(100%, 45.75rem);
+  align-self: end;
   overflow: hidden;
 }
 
