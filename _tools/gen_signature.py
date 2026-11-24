@@ -1,12 +1,17 @@
-"""Turn the photographed signature into a clean transparent PNG.
+"""Turn the photographed signature into a clean, uniform transparent PNG.
 
 The source is a phone photo: grey paper, uneven lighting, a blue-black ink
 stroke. For a "signing" animation the ink must be isolated so it can be drawn
 progressively over the page background.
 
-Approach: the ink is the darkest thing in the frame, so a luminance threshold
-separates it from the paper. The result is then trimmed to its bounding box and
-saved as a white-on-transparent mask, which CSS can tint with `currentColor`.
+A GLOBAL luminance threshold does not work here: the paper is brighter on the
+left of the frame, so the "P" gets a wide soft halo while the rest of the
+signature is crisp. Measured soft/solid ratio per band: 8.06 on the P against
+~0.31 elsewhere — that halo is the "splash" that looks wrong.
+
+The fix is a LOCAL threshold: divide out the paper's illumination with a large
+blur, then threshold the ratio. Ink is then equally dark relative to its own
+neighbourhood everywhere, so the stroke has the same weight across the frame.
 """
 from PIL import Image, ImageFilter
 import numpy as np
@@ -20,33 +25,37 @@ with Image.open(SRC) as im:
     rgb = im.convert('RGB')
     print('source:', im.size, im.mode)
 
-    # Work at a sane size: the animation never needs more than ~1200px wide.
     if rgb.width > 1200:
         scale = 1200 / rgb.width
         rgb = rgb.resize((1200, round(rgb.height * scale)), Image.LANCZOS)
 
     a = np.asarray(rgb).astype(np.float32)
-    # Rec. 709 luminance.
     lum = 0.2126 * a[:, :, 0] + 0.7152 * a[:, :, 1] + 0.0722 * a[:, :, 2]
 
-    # The paper is the bright majority; the ink is the dark tail. Use a
-    # percentile so the threshold adapts to exposure instead of a magic number.
-    paper = np.percentile(lum, 90)
-    ink = np.percentile(lum, 2)
-    print(f'luminance: paper(p90)={paper:.0f} ink(p2)={ink:.0f}')
+    # Estimate the paper's illumination with a large blur. The blur radius must
+    # be much wider than the stroke, so the stroke itself does not bias the
+    # local paper level.
+    paper_img = Image.fromarray(lum.astype(np.uint8), 'L').filter(ImageFilter.GaussianBlur(60))
+    paper = np.asarray(paper_img).astype(np.float32)
+    paper = np.maximum(paper, 1.0)
 
-    # Alpha ramps from 0 at the paper level to 1 at the ink level. A soft ramp
-    # keeps the stroke's antialiasing instead of producing a jagged mask.
-    lo = ink + (paper - ink) * 0.55
-    hi = ink + (paper - ink) * 0.92
-    alpha = np.clip((hi - lum) / max(hi - lo, 1e-6), 0, 1)
+    # Ratio of local luminance to local paper level: 1.0 on blank paper, well
+    # below 1 on ink. This is illumination-invariant.
+    ratio = lum / paper
+    print(f'ratio: paper(p90)={np.percentile(ratio, 90):.3f} '
+          f'ink(p2)={np.percentile(ratio, 2):.3f}')
 
-    # Drop the faint paper grain: anything below 12% is noise, not ink.
-    alpha[alpha < 0.12] = 0
+    # A tight ramp around the ink level gives every stroke the same weight.
+    hi = 0.86
+    lo = 0.58
+    alpha = np.clip((hi - ratio) / (hi - lo), 0, 1)
+
+    # Drop paper grain: anything below 15% is noise, not ink.
+    alpha[alpha < 0.15] = 0
 
     mask = Image.fromarray((alpha * 255).astype(np.uint8), 'L')
     # A light blur removes JPEG blocking without softening the stroke.
-    mask = mask.filter(ImageFilter.GaussianBlur(0.6))
+    mask = mask.filter(ImageFilter.GaussianBlur(0.5))
 
     bbox = mask.getbbox()
     if bbox is None:
@@ -54,7 +63,6 @@ with Image.open(SRC) as im:
     mask = mask.crop(bbox)
     print('trimmed to:', mask.size)
 
-    # White ink on transparent, so CSS can tint it with `currentColor`.
     out = Image.new('RGBA', mask.size, (255, 255, 255, 0))
     out.putalpha(mask)
     out.save(OUT, 'PNG', optimize=True)

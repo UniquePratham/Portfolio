@@ -127,18 +127,62 @@ covered = sum(len(s) for s in strokes)
 print(f'strokes: {len(strokes)}  covering {covered}/{len(pts)} skeleton pixels '
       f'({100 * covered / len(pts):.0f}%)')
 
-# --- Order the strokes the way a hand writes them -------------------------
-# Left to right by the stroke's leftmost point, then top to bottom. That is the
-# order a signature is written in, and it keeps the pen moving forward.
-strokes.sort(key=lambda s: (min(x for _, x in s), min(y for y, _ in s)))
+# --- Chain the strokes into one continuous pen path -----------------------
+# Ordering fragments by x-position makes the pen teleport: it finishes a stroke
+# on the right of a letter, then jumps back left for the next fragment. That is
+# the "dancing" look.
+#
+# Instead the fragments are chained greedily by proximity: from the end of the
+# current stroke, take the nearest remaining stroke end, and orient it so it
+# starts there. The pen then always travels to the closest next piece of ink,
+# which is how a hand moves.
+def dist(a, b):
+    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
 
-# Orient each stroke so it starts at its leftmost end, keeping the pen moving
-# rightwards instead of doubling back.
-oriented = []
-for s in strokes:
-    if s[0][1] > s[-1][1]:
-        s = list(reversed(s))
-    oriented.append(s)
+
+# Start at the leftmost stroke end — a signature begins at the first letter.
+remaining = list(strokes)
+start_i = min(range(len(remaining)), key=lambda i: min(p[1] for p in remaining[i]))
+current = remaining.pop(start_i)
+if current[0][1] > current[-1][1]:
+    current = list(reversed(current))
+
+chained = [current]
+while remaining:
+    tail = chained[-1][-1]
+    best_i, best_rev, best_d = -1, False, float('inf')
+    for i, s in enumerate(remaining):
+        d_head = dist(tail, s[0])
+        d_tail = dist(tail, s[-1])
+        if d_head < best_d:
+            best_i, best_rev, best_d = i, False, d_head
+        if d_tail < best_d:
+            best_i, best_rev, best_d = i, True, d_tail
+    nxt = remaining.pop(best_i)
+    if best_rev:
+        nxt = list(reversed(nxt))
+    chained.append(nxt)
+
+# Report how far the pen has to travel between fragments. A large jump means the
+# chain is wrong and the pen will visibly teleport.
+jumps = [dist(chained[i][-1], chained[i + 1][0]) for i in range(len(chained) - 1)]
+if jumps:
+    jumps_sorted = sorted(jumps)
+    print(f'pen lifts: {len(jumps)}  median {jumps_sorted[len(jumps_sorted) // 2]:.1f}px  '
+          f'max {max(jumps):.1f}px')
+
+# Merge fragments whose ends are within a few pixels: those are one continuous
+# stroke that the skeleton split at a junction, not a real pen lift.
+MERGE_PX = 6.0
+merged = [chained[0]]
+for s in chained[1:]:
+    if dist(merged[-1][-1], s[0]) <= MERGE_PX:
+        merged[-1] = merged[-1] + s
+    else:
+        merged.append(s)
+print(f'merged {len(chained)} fragments -> {len(merged)} strokes')
+
+oriented = merged
 
 
 def rdp(points, eps):
