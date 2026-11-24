@@ -33,9 +33,9 @@ interface SignatureOptions {
  * whole signature takes about 2.5-3s — a natural hand speed. Slower reads as
  * sluggish, faster reads as a machine.
  */
-const WRITE_SPEED = 2.2;
+const WRITE_SPEED = 1.15;
 /** How long a pen lift between strokes takes, in ms. */
-const LIFT_MS = 70;
+const LIFT_MS = 110;
 /** How long the finished signature holds before it fades, in ms. */
 const HOLD_MS = 2600;
 /** How long the fade-out takes, in ms. */
@@ -289,73 +289,120 @@ export function initSignature({ canvas, src, reducedMotion }: SignatureOptions):
     ctx.globalAlpha = alpha;
 
     // --- Hand ------------------------------------------------------------
-    // Drawn first so the pen sits in front of it. A simplified right hand seen
-    // from the back: the index finger along the barrel, the thumb on the grip,
-    // the remaining fingers curled below. Kept small and low-contrast so it
-    // reads as a hand at a glance without competing with the signature.
+    // Drawn first so the pen sits in front of it. A right hand seen from the
+    // back, gripping the pen: the index finger runs along the barrel, the thumb
+    // pinches the grip from the other side, and the remaining three fingers curl
+    // underneath. Drawn as one silhouette plus shading, so it reads as a hand at
+    // footer size instead of a collection of blobs.
     ctx.save();
-    ctx.translate(1, -26);
-    ctx.scale(0.62, 0.62);
+    ctx.translate(1, -24);
+    ctx.scale(0.58, 0.58);
 
     const skin = '#c9a184';
-    const skinLight = '#d8b295';
-    const skinDark = '#b8906f';
+    const skinLight = '#dcb99c';
+    const skinMid = '#cfa88b';
+    const skinDark = '#b08a6b';
+    const crease = 'rgba(112, 74, 50, 0.42)';
 
-    // Palm and back of the hand.
+    // --- Back of the hand and wrist, as one silhouette -------------------
     ctx.beginPath();
-    ctx.moveTo(-2, 8);
-    ctx.quadraticCurveTo(-18, 4, -22, -12);
-    ctx.quadraticCurveTo(-25, -28, -15, -36);
-    ctx.quadraticCurveTo(-4, -42, 7, -35);
-    ctx.quadraticCurveTo(15, -29, 13, -14);
-    ctx.quadraticCurveTo(11, -1, -2, 8);
+    // Wrist, entering from the lower left.
+    ctx.moveTo(-30, 26);
+    ctx.quadraticCurveTo(-26, 10, -24, -2);
+    // Outer edge of the hand, rising to the knuckles.
+    ctx.quadraticCurveTo(-26, -18, -20, -30);
+    ctx.quadraticCurveTo(-13, -40, -2, -40);
+    // Knuckle ridge across the top.
+    ctx.quadraticCurveTo(8, -40, 13, -32);
+    // Down the index side to where it meets the pen.
+    ctx.quadraticCurveTo(17, -24, 15, -14);
+    ctx.quadraticCurveTo(13, -4, 8, 4);
+    // The curled fingers, as three soft lobes.
+    ctx.quadraticCurveTo(2, 12, -4, 14);
+    ctx.quadraticCurveTo(-10, 16, -14, 20);
+    ctx.quadraticCurveTo(-20, 24, -30, 26);
     ctx.closePath();
     ctx.fillStyle = skin;
     ctx.fill();
 
-    // Index finger, running along the barrel.
+    // --- Index finger, along the barrel ---------------------------------
     ctx.beginPath();
-    ctx.moveTo(-1, -4);
-    ctx.quadraticCurveTo(-9, -17, -7, -31);
-    ctx.quadraticCurveTo(-5, -40, 2, -38);
-    ctx.quadraticCurveTo(8, -35, 7, -25);
-    ctx.quadraticCurveTo(6, -14, 5, -4);
+    ctx.moveTo(-2, -6);
+    ctx.quadraticCurveTo(-10, -18, -9, -32);
+    ctx.quadraticCurveTo(-8, -43, 0, -43);
+    ctx.quadraticCurveTo(9, -42, 10, -31);
+    ctx.quadraticCurveTo(11, -19, 8, -6);
     ctx.closePath();
     ctx.fillStyle = skinLight;
     ctx.fill();
 
-    // Thumb, resting on the grip.
+    // --- Thumb, pinching the grip from the far side ---------------------
     ctx.beginPath();
-    ctx.moveTo(5, -6);
-    ctx.quadraticCurveTo(16, -11, 18, -22);
-    ctx.quadraticCurveTo(19, -29, 13, -29);
-    ctx.quadraticCurveTo(8, -28, 6, -19);
+    ctx.moveTo(6, -4);
+    ctx.quadraticCurveTo(18, -8, 21, -19);
+    ctx.quadraticCurveTo(23, -27, 16, -28);
+    ctx.quadraticCurveTo(10, -28, 8, -19);
+    ctx.quadraticCurveTo(7, -11, 6, -4);
     ctx.closePath();
     ctx.fillStyle = skinLight;
     ctx.fill();
 
-    // Curled fingers below the palm.
-    for (let i = 0; i < 3; i += 1) {
+    // --- Curled middle, ring and little fingers -------------------------
+    // Each is a rounded lobe with a crease, so the hand reads as gripping.
+    const fingers = [
+      { x: -13, y: 2, rx: 6.2, ry: 4.6, rot: -0.30, tone: skinMid },
+      { x: -8, y: 8, rx: 5.8, ry: 4.3, rot: -0.22, tone: skinDark },
+      { x: -2, y: 12, rx: 5.2, ry: 3.9, rot: -0.14, tone: skinDark },
+    ];
+    for (const f of fingers) {
       ctx.beginPath();
-      ctx.ellipse(-14 + i * 5.5, -5 + i * 1.8, 4.4, 3.3, -0.35, 0, Math.PI * 2);
-      ctx.fillStyle = i === 0 ? skin : skinDark;
+      ctx.ellipse(f.x, f.y, f.rx, f.ry, f.rot, 0, Math.PI * 2);
+      ctx.fillStyle = f.tone;
       ctx.fill();
-    }
-
-    // Knuckle creases, so the hand reads as a hand rather than a blob.
-    ctx.strokeStyle = 'rgba(120, 80, 55, 0.35)';
-    ctx.lineWidth = 0.9;
-    for (let i = 0; i < 3; i += 1) {
+      // Crease between the fingers.
       ctx.beginPath();
-      ctx.moveTo(-17 + i * 5.5, -8 + i * 1.8);
-      ctx.lineTo(-11 + i * 5.5, -7 + i * 1.8);
+      ctx.moveTo(f.x - f.rx * 0.7, f.y - f.ry * 0.5);
+      ctx.quadraticCurveTo(f.x, f.y - f.ry * 0.9, f.x + f.rx * 0.7, f.y - f.ry * 0.5);
+      ctx.strokeStyle = crease;
+      ctx.lineWidth = 0.8;
       ctx.stroke();
     }
 
-    // A soft shadow where the hand meets the pen, so they read as one object.
+    // --- Shading --------------------------------------------------------
+    // A soft shadow down the outer edge, so the hand has volume.
+    const shade = ctx.createLinearGradient(-30, 0, 16, 0);
+    shade.addColorStop(0, 'rgba(90, 58, 38, 0.30)');
+    shade.addColorStop(0.45, 'rgba(90, 58, 38, 0.06)');
+    shade.addColorStop(1, 'rgba(255, 235, 215, 0.10)');
     ctx.beginPath();
-    ctx.ellipse(0, -6, 10, 5.5, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(16, 26, 22, 0.16)';
+    ctx.moveTo(-30, 26);
+    ctx.quadraticCurveTo(-26, 10, -24, -2);
+    ctx.quadraticCurveTo(-26, -18, -20, -30);
+    ctx.quadraticCurveTo(-13, -40, -2, -40);
+    ctx.quadraticCurveTo(8, -40, 13, -32);
+    ctx.quadraticCurveTo(17, -24, 15, -14);
+    ctx.quadraticCurveTo(13, -4, 8, 4);
+    ctx.quadraticCurveTo(2, 12, -4, 14);
+    ctx.quadraticCurveTo(-10, 16, -14, 20);
+    ctx.quadraticCurveTo(-20, 24, -30, 26);
+    ctx.closePath();
+    ctx.fillStyle = shade;
+    ctx.fill();
+
+    // Knuckle creases across the back of the hand.
+    ctx.strokeStyle = crease;
+    ctx.lineWidth = 0.9;
+    for (let i = 0; i < 3; i += 1) {
+      ctx.beginPath();
+      ctx.moveTo(-16 + i * 7, -26 + i * 1.5);
+      ctx.quadraticCurveTo(-12 + i * 7, -29 + i * 1.5, -8 + i * 7, -26 + i * 1.5);
+      ctx.stroke();
+    }
+
+    // Contact shadow where the hand meets the pen.
+    ctx.beginPath();
+    ctx.ellipse(2, -8, 11, 6, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(16, 26, 22, 0.20)';
     ctx.fill();
 
     ctx.restore();

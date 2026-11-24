@@ -140,6 +140,17 @@ def dist(a, b):
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
 
 
+def stroke_length(s):
+    return sum(dist(s[j - 1], s[j]) for j in range(1, len(s)))
+
+
+# Drop specks. A 2-3 point fragment is skeleton noise at a junction, not a
+# stroke: writing it takes a few milliseconds and makes the pen flicker on and
+# off. Anything shorter than this is absorbed by the merge step below.
+MIN_LEN = 0.05
+strokes = [s for s in strokes if stroke_length(s) >= MIN_LEN]
+print(f'after dropping specks: {len(strokes)} strokes')
+
 # Start at the leftmost stroke end — a signature begins at the first letter.
 remaining = list(strokes)
 start_i = min(range(len(remaining)), key=lambda i: min(p[1] for p in remaining[i]))
@@ -182,6 +193,31 @@ for s in chained[1:]:
         merged.append(s)
 print(f'merged {len(chained)} fragments -> {len(merged)} strokes')
 
+# --- Move the underline flourish to the end -------------------------------
+# A signature's long horizontal flourish is written LAST. The proximity chain
+# puts it wherever it happens to be nearest, which made the underline appear
+# before the letters — the most visible ordering bug.
+#
+# The flourish is the single WIDEST stroke: it runs under the whole signature.
+# A relative test (widest by a clear margin) is robust, whereas an absolute span
+# threshold matches every stroke because they all span a letter or two.
+def span_of(s):
+    xs = [p[1] for p in s]
+    return max(xs) - min(xs)
+
+
+spans = sorted((span_of(s) for s in merged), reverse=True)
+if len(spans) >= 2 and spans[0] > spans[1] * 1.35:
+    widest = max(merged, key=span_of)
+    merged = [s for s in merged if s is not widest] + [widest]
+    print(f'moved the underline flourish to the end (span {spans[0]:.2f} vs next {spans[1]:.2f})')
+else:
+    print(f'no clear flourish found (spans {spans[:3]})')
+
+# --- Merge tiny strokes into their neighbour ------------------------------
+# Done after normalisation, below: the threshold is in normalised units, so
+# comparing it against pixel lengths would silently merge nothing.
+
 oriented = merged
 
 
@@ -210,13 +246,55 @@ min_x, max_x = int(xs.min()), int(xs.max())
 span_y = max(max_y - min_y, 1)
 span_x = max(max_x - min_x, 1)
 
-flat = []
+# Simplify and normalise each stroke, then merge the short ones in NORMALISED
+# units. Doing the merge before normalisation compares pixel lengths against a
+# normalised threshold, which silently merges nothing.
+normalised = []
 for s in oriented:
     simplified = rdp(s, 0.8)
+    normalised.append([
+        ((x - min_x) / span_x, (y - min_y) / span_y) for y, x in simplified
+    ])
+
+
+def nlength(s):
+    return sum(dist(s[j - 1], s[j]) for j in range(1, len(s)))
+
+
+MIN_WRITE_LEN = 0.22
+changed = True
+while changed and len(normalised) > 1:
+    changed = False
+    for i, s in enumerate(normalised):
+        if nlength(s) >= MIN_WRITE_LEN:
+            continue
+        best = None
+        if i > 0:
+            best = (dist(normalised[i - 1][-1], s[0]), i - 1, 'prev')
+        if i < len(normalised) - 1:
+            d = dist(s[-1], normalised[i + 1][0])
+            if best is None or d < best[0]:
+                best = (d, i + 1, 'next')
+        if best is None:
+            break
+        _, j, side = best
+        if side == 'prev':
+            normalised[j] = normalised[j] + s
+        else:
+            normalised[j] = s + normalised[j]
+        normalised.pop(i)
+        changed = True
+        break
+
+print(f'after merging short strokes: {len(normalised)} strokes')
+print('  lengths:', [round(nlength(s), 3) for s in normalised])
+
+flat = []
+for s in normalised:
     if flat:
         flat.append(None)  # pen lift between strokes
-    for y, x in simplified:
-        flat.append([round((x - min_x) / span_x, 5), round((y - min_y) / span_y, 5)])
+    for x, y in s:
+        flat.append([round(x, 5), round(y, 5)])
 
 payload = {
     'points': flat,
