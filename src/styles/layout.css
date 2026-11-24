@@ -183,22 +183,23 @@
    text beside it. */
 .entrance__portrait {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  display: block;
   min-height: 0;
   height: 100%;
   align-self: stretch;
-  /* The canvas is absolutely positioned so its box can never be influenced by
-     the image it draws, and its bottom edge is pinned to the column. */
   overflow: hidden;
 }
 
+/* The canvas bitmap is a fixed size set once from the frame. CSS scales it to
+   the box with `cover`, so the browser's compositor does the work and the
+   bitmap is never resized — which is what caused the portrait to jump. */
 .entrance__portrait canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: bottom center;
   display: block;
 }
 

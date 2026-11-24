@@ -1,14 +1,20 @@
 /**
  * Entrance portrait.
  *
- * A short, skippable scrub of the frame sequence. The portrait advances over the
- * distance the entrance section travels while pinned, then releases.
+ * The portrait is a scroll-scrubbed frame sequence. Two rules make it stable:
  *
- * Sizing is driven by a ResizeObserver on the canvas box, not by `window.resize`
- * alone: the canvas lives in a grid column whose width changes when fonts load
- * and when the viewport crosses a breakpoint. Measuring before layout settles
- * produced a zero-width bitmap and a visible jump when a later resize corrected
- * it, so every resize is now guarded by an actual dimension change.
+ * 1. **The canvas bitmap is a fixed size.** It is set once, from the frame's own
+ *    dimensions, and never touched again. Resizing a canvas clears it, and any
+ *    resize driven by layout is a source of visible jumps. Instead the canvas is
+ *    scaled by CSS (`object-fit: cover`), which the compositor handles without
+ *    touching the bitmap.
+ *
+ * 2. **The drawing is a pure function of the frame index.** No layout reads, no
+ *    viewport maths, no DPR. The same index always produces the same pixels, so
+ *    the portrait cannot drift or change size while scrolling.
+ *
+ * The frames are already portrait and bottom-anchored, so `cover` fills the box
+ * exactly and the subject's feet stay on the bottom edge at every viewport.
  */
 
 interface EntranceOptions {
@@ -18,10 +24,8 @@ interface EntranceOptions {
 }
 
 const TOTAL = 121;
-/** Frames fetched before the entrance is considered ready. */
 const PRIORITY = 12;
 
-/** Phones get the portrait crop, which fills the frame without letterboxing. */
 const TIER: 'desktop' | 'mobile' = window.matchMedia('(max-width: 47.99rem)').matches
   ? 'mobile'
   : 'desktop';
@@ -36,7 +40,6 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
   const ctx: CanvasRenderingContext2D = context;
 
   const frames: Array<ImageBitmap | null> = new Array(TOTAL).fill(null);
-  /** In-flight requests, so a frame is never fetched twice concurrently. */
   const pending = new Map<number, Promise<void>>();
 
   let current = -1;
@@ -44,34 +47,18 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
   let rafId = 0;
   let destroyed = false;
   let ready = false;
-  let lastWidth = 0;
-  let lastHeight = 0;
+  let sized = false;
 
-  /* --- Sizing ---------------------------------------------------------- */
+  /* --- Sizing: once, from the frame, never again ------------------------ */
 
-  function resize(): void {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    const width = Math.round(rect.width * dpr);
-    const height = Math.round(rect.height * dpr);
-
-    // A zero-size box means layout has not settled. Leave the canvas alone and
-    // wait for the ResizeObserver to fire again rather than writing a 0x0
-    // bitmap, which would blank the portrait until the next resize.
-    if (width < 2 || height < 2) return;
-
-    // Only touch the bitmap when the size actually changed. Assigning
-    // canvas.width clears the canvas, so a redundant resize is a visible flash.
-    if (width === lastWidth && height === lastHeight) return;
-
-    lastWidth = width;
-    lastHeight = height;
-    canvas.width = width;
-    canvas.height = height;
-
+  function sizeToFrame(bitmap: ImageBitmap): void {
+    if (sized) return;
+    sized = true;
+    // The bitmap is the frame's own resolution. CSS scales it to the box, so
+    // the canvas never needs to be resized and can never be cleared mid-scroll.
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
     current = -1;
-    paint(target, true);
   }
 
   /* --- Painting -------------------------------------------------------- */
@@ -95,23 +82,12 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
     const bitmap = nearestBitmap(index);
     if (!bitmap) return;
 
-    const { width, height } = canvas;
-    if (width < 2 || height < 2) return;
+    sizeToFrame(bitmap);
 
-    // Fill the box and pin the subject's feet to the bottom edge.
-    //
-    // The frames are portrait and already normalised on head width, so a cover
-    // fit crops almost nothing. Anchoring to the bottom means the figure always
-    // stands on the same line, whatever the viewport height — no dead space
-    // below, and no vertical drift as the box resizes.
-    const scale = Math.max(width / bitmap.width, height / bitmap.height);
-    const w = bitmap.width * scale;
-    const h = bitmap.height * scale;
-    const x = (width - w) / 2;
-    const y = height - h;
-
-    ctx.clearRect(0, 0, width, height);
-    ctx.drawImage(bitmap, x, y, w, h);
+    // Draw the frame 1:1. No scaling maths, no viewport reads — the same index
+    // always produces identical pixels.
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, 0, 0);
     current = index;
   }
 
@@ -150,7 +126,6 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
           return;
         }
         frames[index] = bitmap;
-        // Repaint if this frame is the one the scrub is currently asking for.
         if (index === target) paint(index, true);
       } catch {
         // A missing frame is survivable; paint() falls back to a neighbour.
@@ -194,17 +169,6 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
 
   /* --- Boot ------------------------------------------------------------ */
 
-  // Measure once now, then let the observer handle every later change.
-  resize();
-
-  const resizeObserver = new ResizeObserver(() => resize());
-  resizeObserver.observe(canvas);
-
-  // Fonts change the grid column width after first paint.
-  if ('fonts' in document) {
-    void document.fonts.ready.then(() => resize());
-  }
-
   rafId = requestAnimationFrame(tick);
   void loadAll();
 
@@ -213,7 +177,6 @@ export function initEntrance({ canvas, section, onReady }: EntranceOptions): voi
     () => {
       destroyed = true;
       cancelAnimationFrame(rafId);
-      resizeObserver.disconnect();
       frames.forEach((b) => b?.close());
     },
     { once: true },
