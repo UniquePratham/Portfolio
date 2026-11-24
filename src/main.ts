@@ -12,6 +12,7 @@ import { initAtlas } from './scripts/atlas';
 import { initPalette } from './scripts/palette';
 import { initEntrance } from './scripts/entrance';
 import { initCarousel } from './scripts/carousel';
+import { initGlobe } from './scripts/globe';
 import {
   renderAtlas,
   renderWork,
@@ -281,13 +282,32 @@ if (revealTargets.length > 0) {
 const filterButtons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
 const carouselRoot = document.getElementById('carousel');
 const carouselStage = document.getElementById('carousel-stage');
+const carouselGlobe = document.getElementById('carousel-globe') as HTMLCanvasElement | null;
 const emptyState = document.querySelector<HTMLElement>('[data-empty]');
 
 let carouselCleanup: (() => void) | null = null;
+let globeCleanup: (() => void) | null = null;
 
-if (carouselRoot && carouselStage) {
-  carouselCleanup = initCarousel({ root: carouselRoot, stage: carouselStage });
+function mountCarousel(): void {
+  if (!carouselRoot || !carouselStage) return;
+
+  carouselCleanup?.();
+  globeCleanup?.();
+
+  const handle = initCarousel({ root: carouselRoot, stage: carouselStage });
+  carouselCleanup = handle.destroy;
+
+  if (carouselGlobe) {
+    globeCleanup = initGlobe({
+      canvas: carouselGlobe,
+      getTargetRotation: handle.targetRotation,
+      markerCount: document.querySelectorAll('.carousel__card:not([hidden])').length,
+      reducedMotion: handle.reducedMotion,
+    });
+  }
 }
+
+mountCarousel();
 
 function applyFilter(value: string): void {
   const cards = document.querySelectorAll<HTMLElement>('.carousel__card');
@@ -303,10 +323,7 @@ function applyFilter(value: string): void {
   if (emptyState) emptyState.hidden = shown > 0;
 
   // Rebuild the carousel over the visible cards so the ring stays coherent.
-  if (carouselRoot && carouselStage) {
-    carouselCleanup?.();
-    carouselCleanup = initCarousel({ root: carouselRoot, stage: carouselStage });
-  }
+  mountCarousel();
 }
 
 filterButtons.forEach((btn) => {

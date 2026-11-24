@@ -221,6 +221,10 @@ export function renderWork(): string {
         <div class="filters" role="group" aria-label="Filter projects by discipline">${filters}</div>
 
         <div class="carousel" id="carousel" data-active="0">
+          <div class="carousel__globe" aria-hidden="true">
+            <canvas id="carousel-globe"></canvas>
+          </div>
+
           <div class="carousel__stage" id="carousel-stage">
             ${cards}
           </div>

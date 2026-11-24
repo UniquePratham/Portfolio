@@ -713,8 +713,30 @@
   overflow-y: visible;
 }
 
+/* The wireframe sphere behind the cards. It is a sibling of the stage, not a
+   child, so the stage's perspective does not distort it — the globe is drawn
+   with its own orthographic projection. It is deliberately larger than the card
+   ring: the cards sit in front of a planet, not on a small ball. */
+.carousel__globe {
+  position: absolute;
+  inset: 0 0 auto;
+  height: clamp(38rem, 76vh, 50rem);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.carousel__globe canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .carousel__stage {
   position: relative;
+  z-index: 1;
   height: clamp(38rem, 76vh, 50rem);
   perspective: 1600px;
   perspective-origin: 50% 45%;
@@ -730,10 +752,9 @@
 
 .carousel__card {
   position: absolute;
-  top: 0;
+  top: 50%;
   left: 50%;
   width: min(30rem, 82vw);
-  margin-left: calc(min(30rem, 82vw) / -2);
   transform-style: preserve-3d;
   transition:
     transform 620ms var(--ease-out),
@@ -1075,7 +1096,6 @@
 
   .carousel__card {
     width: min(20rem, 84vw);
-    margin-left: calc(min(20rem, 84vw) / -2);
   }
 
   .carousel__media {
