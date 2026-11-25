@@ -15,6 +15,8 @@ import { initCarousel } from './scripts/carousel';
 import { initGlobe } from './scripts/globe';
 import { initSignature } from './scripts/signature';
 import { initPlayground } from './scripts/playground';
+import { initChart } from './scripts/chart';
+import { initAnnotations } from './scripts/annotate';
 import {
   renderAtlas,
   renderWork,
@@ -24,6 +26,7 @@ import {
   renderPerson,
   renderCapabilities,
   renderPlayground,
+  renderMeasured,
   renderArchive,
   renderContact,
 } from './scripts/sections';
@@ -44,6 +47,7 @@ outlet.innerHTML = [
   renderPerson(),
   renderCapabilities(),
   renderPlayground(),
+  renderMeasured(),
   renderArchive(),
   renderContact(),
 ].join('');
@@ -229,6 +233,7 @@ const SECTION_IDS = [
   'person',
   'capabilities',
   'playground',
+  'measured',
   'archive',
   'contact',
 ];
@@ -420,6 +425,31 @@ if (playgroundRoot && playgroundCanvas) {
     reducedMotion,
   });
 }
+
+/* =========================================================================
+   Measured — D3 chart of real results
+   ========================================================================= */
+
+const measuredRoot = document.getElementById('measured');
+const measuredSvg = document.getElementById('measured-chart') as SVGSVGElement | null;
+
+if (measuredRoot && measuredSvg) {
+  initChart({
+    root: measuredRoot,
+    svg: measuredSvg,
+    reducedMotion,
+    data: [
+      { label: 'Segment error', value: 22.4, baseline: 41.6, unit: 's' },
+      { label: 'Journey error', value: 0.93, baseline: 1.86, unit: 'min' },
+    ],
+  });
+}
+
+/* =========================================================================
+   Hand-drawn emphasis
+   ========================================================================= */
+
+initAnnotations({ root: document, reducedMotion });
 
 /* =========================================================================
    Footer signature — a pen writing the name, on a loop

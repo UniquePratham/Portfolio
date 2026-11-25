@@ -1928,6 +1928,31 @@
 }
 
 /* --------------------------------------------------------------------------
+   Measured — D3 chart
+   -------------------------------------------------------------------------- */
+
+.measured {
+  border: 1px solid var(--rule);
+  background: var(--forest-800);
+  padding: var(--space-m) var(--space-m) var(--space-s);
+}
+
+.measured svg {
+  width: 100%;
+  height: clamp(14rem, 30vh, 20rem);
+  display: block;
+  overflow: visible;
+}
+
+.measured__caption {
+  margin-top: var(--space-s);
+  padding-top: var(--space-2xs);
+  border-top: 1px solid var(--rule);
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+}
+
+/* --------------------------------------------------------------------------
    Footer
    -------------------------------------------------------------------------- */
 

@@ -88,7 +88,7 @@ export function renderAtlas(): string {
       <div class="shell">
         <div class="section-head">
           <p class="section-head__label">The Atlas</p>
-          <h2 class="section-head__title" id="atlas-title">Nine places to look</h2>
+          <h2 class="section-head__title" id="atlas-title">${DESTINATIONS.length} places to look</h2>
           <p class="section-head__lede">
             Each marker is a part of the work. Hover or focus one to see what is inside,
             then jump to it.
@@ -584,8 +584,8 @@ export function renderCapabilities(): string {
           <p class="section-head__label">Capability map</p>
           <h2 class="section-head__title" id="cap-title">What I actually use</h2>
           <p class="section-head__lede">
-            Grouped by domain, with the project each one was used in where there is one. No
-            logo wall.
+            Grouped by domain, with the project each one was used in where there is one.
+            <span data-annotate="underline">No logo wall.</span>
           </p>
         </div>
         <div class="cap-grid">${groups}</div>
@@ -606,7 +606,8 @@ export function renderPlayground(): string {
           <h2 class="section-head__title" id="playground-title">The stack, with mass</h2>
           <p class="section-head__lede">
             Every technology on this site, dropped into a rigid-body simulation. Drag a piece,
-            throw it, or just watch it settle. It is Matter.js doing the work, not a video.
+            throw it, or just watch it settle.
+            <span data-annotate="circle">It is Matter.js doing the work</span>, not a video.
           </p>
         </div>
 
@@ -614,6 +615,34 @@ export function renderPlayground(): string {
           <canvas id="playground-canvas" aria-label="An interactive physics simulation of the technologies used on this site"></canvas>
         </div>
         <p class="playground__hint mono">Drag a piece to throw it</p>
+      </div>
+    </section>`;
+}
+
+/* -------------------------------------------------------------------------
+   Measured — a D3 chart of real project results
+   ------------------------------------------------------------------------- */
+
+export function renderMeasured(): string {
+  return `
+    <section class="dest" id="measured" aria-labelledby="measured-title">
+      <div class="shell">
+        <div class="section-head">
+          <p class="section-head__label">Measured</p>
+          <h2 class="section-head__title" id="measured-title">What the numbers actually say</h2>
+          <p class="section-head__lede">
+            Delhi Bus Intelligence predicts travel time from the bus fleet’s own GPS. These are
+            its reported errors against the published timetable, on 400 real trips — the accent
+            bar is the model, the grey bar is the baseline it replaced.
+          </p>
+        </div>
+
+        <figure class="measured">
+          <svg id="measured-chart" role="img" aria-label="Bar chart comparing the Delhi Bus Intelligence model error against the published timetable baseline"></svg>
+          <figcaption class="measured__caption mono">
+            Source: delhi-bus-intelligence.vercel.app · lower is better
+          </figcaption>
+        </figure>
       </div>
     </section>`;
 }
