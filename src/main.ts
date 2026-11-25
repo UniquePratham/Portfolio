@@ -17,6 +17,18 @@ import { initSignature } from './scripts/signature';
 import { initPlayground } from './scripts/playground';
 import { initChart } from './scripts/chart';
 import { initAnnotations } from './scripts/annotate';
+import { initGraph } from './scripts/graph';
+import { initVoronoi } from './scripts/voronoi';
+import { initInk } from './scripts/ink';
+import { initScroll } from './scripts/scroll';
+import { initShader } from './scripts/shader';
+import { initTour } from './scripts/tour';
+import { initSeries } from './scripts/series';
+import { initPlot } from './scripts/plot';
+import { initZdog } from './scripts/zdog';
+import { initMorph } from './scripts/morph';
+import { initAutoAnimate } from './scripts/autoanimate';
+import { initSound } from './scripts/sound';
 import {
   renderAtlas,
   renderWork,
@@ -27,10 +39,15 @@ import {
   renderCapabilities,
   renderPlayground,
   renderMeasured,
+  renderGraph,
+  renderSeries,
+  renderPlot,
+  renderInk,
+  renderForm,
   renderArchive,
   renderContact,
 } from './scripts/sections';
-import { CAPABILITIES } from './data/content';
+import { CAPABILITIES, PROJECTS, DESTINATIONS } from './data/content';
 
 /* =========================================================================
    One page, rendered once
@@ -48,6 +65,11 @@ outlet.innerHTML = [
   renderCapabilities(),
   renderPlayground(),
   renderMeasured(),
+  renderGraph(),
+  renderSeries(),
+  renderPlot(),
+  renderInk(),
+  renderForm(),
   renderArchive(),
   renderContact(),
 ].join('');
@@ -234,6 +256,11 @@ const SECTION_IDS = [
   'capabilities',
   'playground',
   'measured',
+  'graph',
+  'series',
+  'timeline-plot',
+  'ink',
+  'form',
   'archive',
   'contact',
 ];
@@ -450,6 +477,129 @@ if (measuredRoot && measuredSvg) {
    ========================================================================= */
 
 initAnnotations({ root: document, reducedMotion });
+
+/* =========================================================================
+   Force-directed network of projects and technologies
+   ========================================================================= */
+
+const graphRoot = document.getElementById('graph-root');
+const graphSvg = document.getElementById('graph-svg') as SVGSVGElement | null;
+
+if (graphRoot && graphSvg) {
+  initGraph({
+    root: graphRoot,
+    svg: graphSvg,
+    reducedMotion,
+    projects: PROJECTS.map((p) => ({ slug: p.slug, title: p.title, stack: p.stack })),
+  });
+}
+
+/* =========================================================================
+   Voronoi hover regions on the atlas
+   ========================================================================= */
+
+if (atlasSvg && atlasReadout) {
+  initVoronoi({
+    svg: atlasSvg,
+    reducedMotion,
+    points: DESTINATIONS.map((d) => ({
+      id: d.id,
+      label: d.label,
+      x: d.x,
+      y: d.y,
+      hint: d.hint,
+    })),
+    onHover: (point) => {
+      if (!point) return;
+      atlasReadout.textContent = `${point.label} — ${point.hint}`;
+    },
+  });
+}
+
+/* =========================================================================
+   Ink guestbook
+   ========================================================================= */
+
+const inkRoot = document.getElementById('ink-root');
+const inkCanvas = document.getElementById('ink-canvas') as HTMLCanvasElement | null;
+const inkClear = document.getElementById('ink-clear') as HTMLButtonElement | null;
+
+if (inkRoot && inkCanvas && inkClear) {
+  initInk({ root: inkRoot, canvas: inkCanvas, clearButton: inkClear, reducedMotion });
+}
+
+/* =========================================================================
+   Scroll-driven typography (GSAP)
+   ========================================================================= */
+
+initScroll({ reducedMotion });
+
+/* =========================================================================
+   Contour shader behind the entrance (ogl)
+   ========================================================================= */
+
+const shaderCanvas = document.getElementById('entrance-shader') as HTMLCanvasElement | null;
+if (shaderCanvas) initShader({ canvas: shaderCanvas, reducedMotion });
+
+/* =========================================================================
+   Guided tour (driver.js)
+   ========================================================================= */
+
+const tourButton = document.getElementById('tour-start') as HTMLButtonElement | null;
+if (tourButton) initTour({ trigger: tourButton, reducedMotion });
+
+/* =========================================================================
+   Time series (uPlot)
+   ========================================================================= */
+
+const seriesRoot = document.getElementById('series-root');
+const seriesChart = document.getElementById('series-chart');
+if (seriesRoot && seriesChart) {
+  initSeries({ root: seriesRoot, container: seriesChart, reducedMotion });
+}
+
+/* =========================================================================
+   Distribution plot (Observable Plot)
+   ========================================================================= */
+
+const plotRoot = document.getElementById('plot-root');
+const plotChart = document.getElementById('plot-chart');
+if (plotRoot && plotChart) {
+  initPlot({
+    root: plotRoot,
+    container: plotChart,
+    reducedMotion,
+    data: PROJECTS.map((p) => ({ title: p.title, year: p.year, discipline: p.discipline })),
+  });
+}
+
+/* =========================================================================
+   Pseudo-3D globe (Zdog)
+   ========================================================================= */
+
+const zdogCanvas = document.getElementById('zdog-canvas') as HTMLCanvasElement | null;
+if (zdogCanvas) initZdog({ canvas: zdogCanvas, reducedMotion });
+
+/* =========================================================================
+   Contour morph (flubber)
+   ========================================================================= */
+
+const morphPath = document.getElementById('morph-path') as SVGPathElement | null;
+const morphRoot = document.getElementById('morph-root');
+if (morphPath && morphRoot) initMorph({ root: morphRoot, path: morphPath, reducedMotion });
+
+/* =========================================================================
+   List reflow animation
+   ========================================================================= */
+
+initAutoAnimate({ reducedMotion });
+
+/* =========================================================================
+   Interface sound (Howler)
+   ========================================================================= */
+
+const soundToggle = document.getElementById('sound-toggle') as HTMLButtonElement | null;
+if (soundToggle) initSound({ toggle: soundToggle, reducedMotion });
 
 /* =========================================================================
    Footer signature — a pen writing the name, on a loop

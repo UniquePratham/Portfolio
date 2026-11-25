@@ -648,6 +648,149 @@ export function renderMeasured(): string {
 }
 
 /* -------------------------------------------------------------------------
+   Graph — projects and technologies as a force-directed network
+   ------------------------------------------------------------------------- */
+
+export function renderGraph(): string {
+  return `
+    <section class="dest" id="graph" aria-labelledby="graph-title">
+      <div class="shell">
+        <div class="section-head">
+          <p class="section-head__label">Network</p>
+          <h2 class="section-head__title" id="graph-title">How the work connects</h2>
+          <p class="section-head__lede">
+            Every project and every technology it uses, laid out by a force simulation. Hover a
+            project to light its stack; hover a technology to see every project that depends on
+            it. The size of a technology node is how many projects use it.
+          </p>
+        </div>
+
+        <div class="graph" id="graph-root">
+          <svg id="graph-svg" role="list" aria-label="Network of projects and the technologies they use"></svg>
+        </div>
+        <p class="graph__hint mono">Hover or focus a node to trace its connections</p>
+      </div>
+    </section>`;
+}
+
+/* -------------------------------------------------------------------------
+   Series — a day of travel times, with uPlot
+   ------------------------------------------------------------------------- */
+
+export function renderSeries(): string {
+  return `
+    <section class="dest" id="series" aria-labelledby="series-title">
+      <div class="shell">
+        <div class="section-head">
+          <p class="section-head__label">Signal</p>
+          <h2 class="section-head__title" id="series-title">A day of travel time</h2>
+          <p class="section-head__lede">
+            The summary above is two numbers. This is the shape behind them: segment travel time
+            across a day, with the model tracking the morning and evening peaks that the flat
+            timetable misses.
+          </p>
+        </div>
+
+        <figure class="series" id="series-root">
+          <div id="series-chart"></div>
+          <figcaption class="series__caption mono">
+            Illustrative series shaped from the published error figures — not live data
+          </figcaption>
+        </figure>
+      </div>
+    </section>`;
+}
+
+/* -------------------------------------------------------------------------
+   Timeline plot — projects by year and discipline, with Observable Plot
+   ------------------------------------------------------------------------- */
+
+export function renderPlot(): string {
+  return `
+    <section class="dest" id="timeline-plot" aria-labelledby="plot-title">
+      <div class="shell">
+        <div class="section-head">
+          <p class="section-head__label">Distribution</p>
+          <h2 class="section-head__title" id="plot-title">Where the work sits</h2>
+          <p class="section-head__lede">
+            Every project by year and discipline. The clustering is the honest picture: most of
+            the recent work is product, and the systems work is older.
+          </p>
+        </div>
+
+        <figure class="plot" id="plot-root">
+          <div id="plot-chart"></div>
+          <figcaption class="plot__caption mono">Hover a dot for the project name</figcaption>
+        </figure>
+      </div>
+    </section>`;
+}
+
+/* -------------------------------------------------------------------------
+   Ink — a guestbook the visitor can sign
+   ------------------------------------------------------------------------- */
+
+export function renderInk(): string {
+  return `
+    <section class="dest" id="ink" aria-labelledby="ink-title">
+      <div class="shell">
+        <div class="section-head">
+          <p class="section-head__label">Guestbook</p>
+          <h2 class="section-head__title" id="ink-title">Your turn to sign</h2>
+          <p class="section-head__lede">
+            The signature in the footer is drawn by a pen. This one is yours — real ink, where
+            stroke width follows how fast you move. Nothing is uploaded; the drawing never leaves
+            this device.
+          </p>
+        </div>
+
+        <div class="ink" id="ink-root">
+          <canvas id="ink-canvas" aria-label="A canvas you can draw on with the pointer"></canvas>
+          <div class="ink__bar">
+            <button class="btn btn--outline" type="button" id="ink-clear">Clear</button>
+            <span class="ink__note mono">Draw with mouse, pen or finger</span>
+          </div>
+        </div>
+      </div>
+    </section>`;
+}
+
+/* -------------------------------------------------------------------------
+   Form — a pseudo-3D globe and a morphing contour
+   ------------------------------------------------------------------------- */
+
+export function renderForm(): string {
+  return `
+    <section class="dest" id="form" aria-labelledby="form-title">
+      <div class="shell">
+        <div class="section-head">
+          <p class="section-head__label">Form</p>
+          <h2 class="section-head__title" id="form-title">Two ways to draw a sphere</h2>
+          <p class="section-head__lede">
+            On the left, a wireframe globe in flat-shaded pseudo-3D. On the right, a contour that
+            redraws itself as you scroll. Neither uses WebGL for the geometry — one is Zdog, the
+            other is flubber interpolating between two paths.
+          </p>
+        </div>
+
+        <div class="form-grid" id="morph-root">
+          <figure class="form-cell">
+            <canvas id="zdog-canvas" aria-hidden="true"></canvas>
+            <figcaption class="mono">Zdog · flat-shaded 3D</figcaption>
+          </figure>
+
+          <figure class="form-cell">
+            <svg viewBox="0 0 1000 640" role="img" aria-label="A contour shape that morphs as the page scrolls">
+              <path id="morph-path" fill="none" stroke="#c4df73" stroke-width="1.4" stroke-opacity="0.7" />
+            </svg>
+            <figcaption class="mono">flubber · path interpolation</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>`;
+}
+
+/* -------------------------------------------------------------------------
    Archive
    ------------------------------------------------------------------------- */
 

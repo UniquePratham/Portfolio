@@ -1953,6 +1953,247 @@
 }
 
 /* --------------------------------------------------------------------------
+   Graph — force-directed network
+   -------------------------------------------------------------------------- */
+
+.graph {
+  border: 1px solid var(--rule);
+  background: var(--forest-800);
+  height: clamp(24rem, 58vh, 34rem);
+  overflow: hidden;
+}
+
+.graph svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.graph svg g[tabindex] {
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.graph svg g[tabindex]:focus-visible {
+  outline: none;
+}
+
+.graph svg g[tabindex]:focus-visible circle {
+  stroke: var(--text);
+  stroke-width: 2;
+}
+
+.graph__hint {
+  margin-top: var(--space-2xs);
+  color: var(--text-faint);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Series — uPlot
+   -------------------------------------------------------------------------- */
+
+.series,
+.plot {
+  border: 1px solid var(--rule);
+  background: var(--forest-800);
+  padding: var(--space-m) var(--space-m) var(--space-s);
+}
+
+.series__caption,
+.plot__caption {
+  margin-top: var(--space-s);
+  padding-top: var(--space-2xs);
+  border-top: 1px solid var(--rule);
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+}
+
+/* uPlot ships its own light theme; these override it to the site palette. */
+.series .u-legend {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  color: var(--text-muted);
+}
+
+.series .u-legend .u-marker {
+  border-width: 2px;
+}
+
+.series .u-wrap {
+  font-family: var(--font-mono);
+}
+
+.series .u-select {
+  background: rgba(196, 223, 115, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   Plot — Observable
+   -------------------------------------------------------------------------- */
+
+.plot svg {
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* --------------------------------------------------------------------------
+   Ink guestbook
+   -------------------------------------------------------------------------- */
+
+.ink {
+  border: 1px solid var(--rule);
+  background: var(--forest-800);
+  padding: var(--space-s);
+}
+
+.ink canvas {
+  width: 100%;
+  height: clamp(12rem, 26vh, 18rem);
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 31px,
+      rgba(241, 240, 232, 0.06) 31px,
+      rgba(241, 240, 232, 0.06) 32px
+    );
+}
+
+.ink__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  margin-top: var(--space-s);
+}
+
+.ink__note {
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+}
+
+/* --------------------------------------------------------------------------
+   Form — Zdog and flubber
+   -------------------------------------------------------------------------- */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: var(--space-m);
+}
+
+.form-cell {
+  border: 1px solid var(--rule);
+  background: var(--forest-800);
+  padding: var(--space-m);
+  display: grid;
+  gap: var(--space-s);
+  place-items: center;
+}
+
+.form-cell canvas,
+.form-cell svg {
+  width: 100%;
+  max-width: 20rem;
+  aspect-ratio: 1;
+  display: block;
+}
+
+.form-cell figcaption {
+  color: var(--text-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Entrance shader
+   -------------------------------------------------------------------------- */
+
+.entrance__shader {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.9;
+}
+
+.entrance__sticky {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Tour popover
+   -------------------------------------------------------------------------- */
+
+/* driver.js ships a light theme with high-specificity defaults. These selectors
+   match its own specificity so the popover takes the site palette. */
+.driver-popover.tour-popover {
+  font-family: var(--font-sans);
+  background: var(--forest-800);
+  color: var(--text);
+  border: 1px solid var(--rule-strong);
+  border-radius: 0;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+}
+
+.driver-popover.tour-popover .driver-popover-title {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  color: var(--text);
+  text-shadow: none;
+}
+
+.driver-popover.tour-popover .driver-popover-description {
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  line-height: 1.6;
+}
+
+.driver-popover.tour-popover .driver-popover-progress-text {
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+}
+
+.driver-popover.tour-popover button {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--rule-strong);
+  text-shadow: none;
+}
+
+.driver-popover.tour-popover button:hover,
+.driver-popover.tour-popover button:focus {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+.driver-popover.tour-popover .driver-popover-arrow {
+  display: none;
+}
+
+.driver-popover.tour-popover .driver-popover-close-btn {
+  color: var(--text-faint);
+}
+
+.driver-popover.tour-popover .driver-popover-close-btn:hover {
+  color: var(--text);
+}
+
+/* --------------------------------------------------------------------------
    Footer
    -------------------------------------------------------------------------- */
 

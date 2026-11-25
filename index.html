@@ -97,6 +97,12 @@
         </nav>
 
         <div class="masthead__actions">
+          <button class="kbd-hint" type="button" id="tour-start" aria-label="Start a guided tour">
+            <span>Tour</span>
+          </button>
+          <button class="kbd-hint" type="button" id="sound-toggle" aria-pressed="false" aria-label="Toggle interface sound">
+            <span>Sound off</span>
+          </button>
           <button class="kbd-hint" type="button" data-open-palette aria-label="Open command palette">
             <span>Search</span>
             <kbd>⌘K</kbd>
@@ -113,6 +119,7 @@
            The section is taller than the viewport so the portrait can stay
            pinned while the scrub advances. -->
       <section class="entrance" id="entrance">
+        <canvas class="entrance__shader" id="entrance-shader" aria-hidden="true"></canvas>
         <div class="entrance__sticky">
           <div class="shell entrance__layout">
             <div class="entrance__grid">
