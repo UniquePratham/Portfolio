@@ -14,6 +14,7 @@ import { initEntrance } from './scripts/entrance';
 import { initCarousel } from './scripts/carousel';
 import { initGlobe } from './scripts/globe';
 import { initSignature } from './scripts/signature';
+import { initPlayground } from './scripts/playground';
 import {
   renderAtlas,
   renderWork,
@@ -22,9 +23,11 @@ import {
   renderNotes,
   renderPerson,
   renderCapabilities,
+  renderPlayground,
   renderArchive,
   renderContact,
 } from './scripts/sections';
+import { CAPABILITIES } from './data/content';
 
 /* =========================================================================
    One page, rendered once
@@ -40,6 +43,7 @@ outlet.innerHTML = [
   renderNotes(),
   renderPerson(),
   renderCapabilities(),
+  renderPlayground(),
   renderArchive(),
   renderContact(),
 ].join('');
@@ -224,6 +228,7 @@ const SECTION_IDS = [
   'notes',
   'person',
   'capabilities',
+  'playground',
   'archive',
   'contact',
 ];
@@ -399,6 +404,22 @@ document.querySelectorAll<HTMLElement>('[data-scroll-to-atlas]').forEach((el) =>
 
 const year = document.getElementById('year');
 if (year) year.textContent = String(new Date().getFullYear());
+
+/* =========================================================================
+   Playground — Matter.js physics
+   ========================================================================= */
+
+const playgroundRoot = document.getElementById('playground-root');
+const playgroundCanvas = document.getElementById('playground-canvas') as HTMLCanvasElement | null;
+
+if (playgroundRoot && playgroundCanvas) {
+  initPlayground({
+    root: playgroundRoot,
+    canvas: playgroundCanvas,
+    labels: CAPABILITIES.flatMap((c) => c.items.map((i) => i.name)),
+    reducedMotion,
+  });
+}
 
 /* =========================================================================
    Footer signature — a pen writing the name, on a loop

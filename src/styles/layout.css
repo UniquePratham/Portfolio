@@ -1893,6 +1893,41 @@
 }
 
 /* --------------------------------------------------------------------------
+   Playground — Matter.js physics
+   -------------------------------------------------------------------------- */
+
+.playground {
+  position: relative;
+  height: clamp(20rem, 46vh, 30rem);
+  border: 1px solid var(--rule);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(196, 223, 115, 0.05), transparent 60%),
+    var(--forest-800);
+  overflow: hidden;
+  /* The canvas is the simulation surface; the pointer must reach it, not the
+     page's smooth-scroll handler. */
+  touch-action: none;
+}
+
+.playground canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+.playground canvas:active {
+  cursor: grabbing;
+}
+
+.playground__hint {
+  margin-top: var(--space-2xs);
+  color: var(--text-faint);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
    Footer
    -------------------------------------------------------------------------- */
 

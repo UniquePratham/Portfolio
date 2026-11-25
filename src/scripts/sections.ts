@@ -211,7 +211,7 @@ export function renderWork(): string {
       <div class="shell">
         <div class="section-head">
           <p class="section-head__label">Selected work</p>
-          <h2 class="section-head__title" id="work-title">Six projects, six problems</h2>
+          <h2 class="section-head__title" id="work-title">${PROJECTS.length} projects, ${PROJECTS.length} problems</h2>
           <p class="section-head__lede">
             Drag, scroll or use the arrows to turn the carousel. Open a card to read the
             problem, the decisions and what the thing actually does.
@@ -397,7 +397,7 @@ export function renderOpenSource(): string {
       <li>
         <a class="collab__repo" href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.repo)}</a>
         <span class="collab__what">${esc(c.what)}</span>
-        <span class="collab__count">${c.merged} merged</span>
+        <span class="collab__count">${arrow}</span>
       </li>`,
   ).join('');
 
@@ -408,8 +408,8 @@ export function renderOpenSource(): string {
           <p class="section-head__label">Open-source observatory</p>
           <h2 class="section-head__title" id="oss-title">Work in repositories I don’t own</h2>
           <p class="section-head__lede">
-            Two upstream fixes, and a long collaboration on team builds. Counts are from the
-            GitHub search API as of ${esc(OSS_TOTALS.asOf)}.
+            Two upstream fixes in projects I use. Counts are from the GitHub search API as of
+            ${esc(OSS_TOTALS.asOf)}.
           </p>
         </div>
 
@@ -422,7 +422,7 @@ export function renderOpenSource(): string {
         <h3 class="section-head__title" style="font-size:var(--step-3);margin-bottom:var(--space-s)">Upstream</h3>
         ${prs}
 
-        <h3 class="section-head__title" style="font-size:var(--step-3);margin-top:var(--space-xl);margin-bottom:var(--space-s)">Collaboration</h3>
+        <h3 class="section-head__title" style="font-size:var(--step-3);margin-top:var(--space-xl);margin-bottom:var(--space-s)">My repositories</h3>
         <ul class="collab">${collab}</ul>
       </div>
     </section>`;
@@ -594,15 +594,43 @@ export function renderCapabilities(): string {
 }
 
 /* -------------------------------------------------------------------------
+   Playground — the capability map as a physics simulation
+   ------------------------------------------------------------------------- */
+
+export function renderPlayground(): string {
+  return `
+    <section class="dest" id="playground" aria-labelledby="playground-title">
+      <div class="shell">
+        <div class="section-head">
+          <p class="section-head__label">Playground</p>
+          <h2 class="section-head__title" id="playground-title">The stack, with mass</h2>
+          <p class="section-head__lede">
+            Every technology on this site, dropped into a rigid-body simulation. Drag a piece,
+            throw it, or just watch it settle. It is Matter.js doing the work, not a video.
+          </p>
+        </div>
+
+        <div class="playground" id="playground-root">
+          <canvas id="playground-canvas" aria-label="An interactive physics simulation of the technologies used on this site"></canvas>
+        </div>
+        <p class="playground__hint mono">Drag a piece to throw it</p>
+      </div>
+    </section>`;
+}
+
+/* -------------------------------------------------------------------------
    Archive
    ------------------------------------------------------------------------- */
 
 export function renderArchive(): string {
   const items: Array<[string, string, string]> = [
-    ['Urban Motion', 'Car rental platform — long-running collaboration', 'https://github.com/subhro1530/urbanmotion'],
-    ['Vitality AI', 'IoT health emergency response system', 'https://github.com/subhro1530/VitalityAI'],
-    ['Pangea News', 'Multi-category news reader', 'https://github.com/subhro1530/pangea-news'],
-    ['ACNS', 'Next.js application with Stripe payments', 'https://github.com/subhro1530/acns-v4'],
+    ['Delhi Bus Intelligence', 'Bus-GPS travel-time model and journey planner', 'https://delhi-bus-intelligence.vercel.app'],
+    ['Silent Co-Driver', 'F1 radio intelligence and driver-stress platform', 'https://silent-co-driver-pratham-agarwals-projects.vercel.app'],
+    ['Sentinel Forge', 'Multi-agent log analysis and mitigation', 'https://sentinel-forge-gamma.vercel.app'],
+    ['WireWave', 'Real-time messaging application', 'https://wirewave.vercel.app'],
+    ['Nirbhaya', 'Women’s safety app with emergency alerts and location sharing', 'https://nirbhaya.vercel.app'],
+    ['regexlab', 'Test, explain and look up regular expressions locally', 'https://uniquepratham.github.io/regexlab/'],
+    ['TidyCSV', 'In-browser CSV cleaner — no upload', 'https://uniquepratham.github.io/tidycsv/'],
     ['DualText OCR Fusion', 'Multilingual OCR with keyword search', 'https://huggingface.co/spaces/UniquePratham/DualTextOCRFusion'],
     ['Windows 11 in the browser', 'Desktop experience recreated in HTML, CSS and JS', 'https://windows11-browser.vercel.app'],
     ['CrisisLink', 'Disaster response coordination platform', 'https://crisislink-pied.vercel.app'],

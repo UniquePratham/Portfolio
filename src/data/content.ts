@@ -258,6 +258,194 @@ export const PROJECTS: Project[] = [
       height: 1000,
     },
   },
+  {
+    slug: 'delhi-bus',
+    title: 'Delhi Bus Intelligence',
+    discipline: 'ai',
+    year: '2026',
+    summary:
+      'A journey planner that treats the Delhi bus fleet as a traffic sensor, and estimates how full each bus will be.',
+    problem:
+      'Delhi publishes no reliable travel-time data for its bus network. Timetables are optimistic, and crowding is invisible until you are standing in it.',
+    approach:
+      'Every bus reports its position every few seconds. Aggregating thousands of those pings gives a measured travel time per road segment, which the planner routes over — then a second model estimates crowding from ticketing data.',
+    role: 'Sole author — ingestion, travel-time model, routing, crowding estimate, interface.',
+    stack: ['Python', 'FastAPI', 'MapLibre', 'GTFS'],
+    outcomes: [
+      'Segment error 22.4 s against a 41.6 s timetable baseline',
+      'Journey error 0.93 min across 400 real trips',
+      '60% lower error than the published timetable',
+      'Crowding coverage on 63% of routes',
+    ],
+    decisions: [
+      {
+        title: 'The fleet is the sensor',
+        body: 'No new hardware and no partnership. The GPS pings the buses already send are enough to measure the network, which is why the model covers routes nobody instrumented.',
+      },
+      {
+        title: 'Rank by what you asked for',
+        body: 'Fastest, balanced and calmer are three different weightings over the same graph. Presenting one number would hide the trade between speed and crowding that a rider actually makes.',
+      },
+    ],
+    links: [
+      { label: 'Live', href: 'https://delhi-bus-intelligence.vercel.app' },
+      { label: 'Source', href: 'https://github.com/UniquePratham/delhi-bus-intelligence' },
+    ],
+    image: {
+      src: '/work/delhi-bus.webp',
+      alt: 'Delhi Bus Intelligence journey planner with a route drawn over a Delhi map and measured error figures',
+      width: 1600,
+      height: 1000,
+    },
+  },
+  {
+    slug: 'regexlab',
+    title: 'RegexLab',
+    discipline: 'tools',
+    year: '2026',
+    summary:
+      'Write a pattern, paste your text, and see every match and capture group instantly — entirely offline.',
+    problem:
+      'Regex testers send your input to a server. That is unacceptable when the string you are debugging is a log line with a token in it.',
+    approach:
+      'One HTML file, no dependencies, no network. The engine is the browser’s own, so what you see is what your code will do.',
+    role: 'Sole author — interface, recipe library, cheat sheet.',
+    stack: ['JavaScript', 'HTML', 'CSS'],
+    outcomes: [
+      'Runs offline with no requests, no storage and no accounts',
+      'Highlights every match and lists each capture group with its offsets',
+      'Ships a recipe library and a token cheat sheet',
+    ],
+    decisions: [
+      {
+        title: 'No build step',
+        body: 'A single file can be opened from disk, emailed, or dropped on any static host. A bundler would add a toolchain to a tool whose whole point is that it has none.',
+      },
+      {
+        title: 'Show the offsets',
+        body: 'A match is not enough when you are debugging — you need to know where it starts and ends to see why the next one was missed.',
+      },
+    ],
+    links: [
+      { label: 'Live', href: 'https://uniquepratham.github.io/regexlab/' },
+      { label: 'Source', href: 'https://github.com/UniquePratham/regexlab' },
+    ],
+    image: {
+      src: '/work/regexlab.webp',
+      alt: 'RegexLab showing a pattern, test string with highlighted matches, capture groups and a cheat sheet',
+      width: 1600,
+      height: 1000,
+    },
+  },
+  {
+    slug: 'tidycsv',
+    title: 'TidyCSV',
+    discipline: 'product',
+    year: '2026',
+    summary:
+      'Clean a messy CSV in the browser — duplicates, whitespace, mixed dates, bad emails, broken headers.',
+    problem:
+      'Every CSV cleaner wants an upload. The file usually contains customer data, so uploading it is the one thing you cannot do.',
+    approach:
+      'Parse and repair in the tab. The file never leaves the device; the paid export unlocks the full result, and the analysis stays local either way.',
+    role: 'Sole author — parser, repair rules, interface, payments.',
+    stack: ['JavaScript', 'HTML', 'Razorpay'],
+    outcomes: [
+      '100% local — the file never leaves the device',
+      'Reports each rule it applied and how many rows it changed',
+      'Free preview of the cleaned table before any payment',
+    ],
+    decisions: [
+      {
+        title: 'Local by construction',
+        body: 'There is no upload endpoint to misuse. Making the privacy claim structural rather than a promise means it cannot regress.',
+      },
+      {
+        title: 'Charge for the export, not the analysis',
+        body: 'You can see exactly what will change before paying. Charging for the diagnosis would mean asking for money before the tool has proved it works.',
+      },
+    ],
+    links: [
+      { label: 'Live', href: 'https://uniquepratham.github.io/tidycsv/' },
+      { label: 'Source', href: 'https://github.com/UniquePratham/tidycsv' },
+    ],
+    image: {
+      src: '/work/tidycsv.webp',
+      alt: 'TidyCSV with a file drop zone, issues found table and cleaned preview',
+      width: 1600,
+      height: 1000,
+    },
+  },
+  {
+    slug: 'nirbhaya',
+    title: 'Nirbhaya',
+    discipline: 'product',
+    year: '2025',
+    summary:
+      'A personal safety app that alerts a trusted network and shares location during an emergency.',
+    problem:
+      'Emergency apps assume you can unlock a phone, open an app and navigate a menu. In the situation they exist for, you often cannot.',
+    approach:
+      'One action triggers the alert. The trusted circle is configured in advance, so the moment of need requires no decisions.',
+    role: 'Sole author — interface, alert flow, location sharing.',
+    stack: ['TypeScript', 'React', 'Next.js'],
+    outcomes: [
+      'Single-action emergency alert to a pre-configured trusted circle',
+      'Live location sharing during an active alert',
+      'Marketing site and app interface built end to end',
+    ],
+    decisions: [
+      {
+        title: 'Configure in calm, act in crisis',
+        body: 'Every decision the user could have to make is moved to setup. The emergency path is one action because that is all the situation allows.',
+      },
+    ],
+    links: [
+      { label: 'Live', href: 'https://nirbhaya.vercel.app' },
+      { label: 'Source', href: 'https://github.com/UniquePratham/Nirbhaya_Web_App' },
+    ],
+    image: {
+      src: '/work/nirbhaya.webp',
+      alt: 'Nirbhaya landing page with the headline Empower Your Safety, Connect with Confidence',
+      width: 1600,
+      height: 1000,
+    },
+  },
+  {
+    slug: 'utopians',
+    title: 'Utopians',
+    discipline: 'product',
+    year: '2025',
+    summary:
+      'The site for the University of Calcutta CTF team — live stats, event history and a join flow.',
+    problem:
+      'A CTF team’s record lives in a third-party scoreboard. Recruiting and credibility both need a home that the team controls.',
+    approach:
+      'Pull the scoreboard data and present it as the team’s own record, with the terminal motif the audience expects.',
+    role: 'Sole author — design, build, data integration.',
+    stack: ['TypeScript', 'Next.js', 'Tailwind', 'Framer Motion'],
+    outcomes: [
+      'Live CTFtime statistics: 20 events, best rank #28, 38,984 points',
+      'Event history and team roster',
+      'Join flow for new members',
+    ],
+    decisions: [
+      {
+        title: 'Real numbers, not a hero image',
+        body: 'The stats band is the hero. For a competitive team the record is the argument, so it belongs above the fold rather than in a footer.',
+      },
+    ],
+    links: [
+      { label: 'Live', href: 'https://utopians.vercel.app' },
+      { label: 'Source', href: 'https://github.com/UniquePratham/Utopians' },
+    ],
+    image: {
+      src: '/work/utopians.webp',
+      alt: 'Utopians CTF team site with the team logo, live statistics and a terminal panel',
+      width: 1600,
+      height: 1000,
+    },
+  },
 ];
 
 export interface Contribution {
@@ -309,47 +497,52 @@ export interface Collaboration {
   repo: string;
   url: string;
   what: string;
-  merged: number;
 }
 
+/**
+ * Repositories I own.
+ *
+ * Work in other people's repositories is listed under `CONTRIBUTIONS` instead,
+ * where each entry names the specific pull request.
+ */
 export const COLLABORATIONS: Collaboration[] = [
   {
-    repo: 'subhro1530/urbanmotion',
-    url: 'https://github.com/subhro1530/urbanmotion',
-    what: 'Car rental platform — dashboard, booking flow, payments, UI fixes',
-    merged: 45,
+    repo: 'UniquePratham/Terminator',
+    url: 'https://github.com/UniquePratham/Terminator',
+    what: 'C-based X11 terminal emulator and shell',
   },
   {
-    repo: 'HealthPlus',
-    url: 'https://github.com/UniquePratham/HealthPlus',
-    what: 'Health assistant front end and triage flows',
-    merged: 26,
+    repo: 'UniquePratham/tigergraph-fraud-investigation',
+    url: 'https://github.com/UniquePratham/tigergraph-fraud-investigation',
+    what: 'Agentic fraud investigation platform',
   },
   {
-    repo: 'subhro1530/VitalityAI',
-    url: 'https://github.com/subhro1530/VitalityAI',
-    what: 'IoT health monitoring interface and alerting',
-    merged: 15,
+    repo: 'UniquePratham/delhi-bus-intelligence',
+    url: 'https://github.com/UniquePratham/delhi-bus-intelligence',
+    what: 'Bus-GPS travel-time model and journey planner',
   },
   {
-    repo: 'subhro1530/pangea-news',
-    url: 'https://github.com/subhro1530/pangea-news',
-    what: 'News reader — category routing and search',
-    merged: 10,
+    repo: 'UniquePratham/silent-co-driver',
+    url: 'https://github.com/UniquePratham/silent-co-driver',
+    what: 'F1 radio intelligence and driver-stress platform',
   },
   {
-    repo: 'subhro1530/acns-v4',
-    url: 'https://github.com/subhro1530/acns-v4',
-    what: 'Next.js application with Stripe payments and email',
-    merged: 10,
+    repo: 'UniquePratham/Final-Year-Project',
+    url: 'https://github.com/UniquePratham/Final-Year-Project',
+    what: 'Sentinel Forge — multi-agent log analysis',
   },
 ];
 
-/** Totals verified against the GitHub search API. */
+/**
+ * Merged pull requests in repositories I do not own.
+ *
+ * Verified against the GitHub search API as of `OSS_TOTALS.asOf`. Only the two
+ * upstream fixes are listed; the count is the real total, not an estimate.
+ */
 export const OSS_TOTALS = {
-  merged: 169,
-  repos: 18,
-  asOf: '2026-11-22',
+  merged: 2,
+  repos: 2,
+  asOf: '2026-11-25',
 };
 
 export interface TimelineEntry {
@@ -368,8 +561,8 @@ export const TIMELINE: TimelineEntry[] = [
   },
   {
     year: '2024',
-    title: 'Urban Motion and Vitality AI',
-    detail: 'Long-running collaboration on a car rental platform and an IoT health system',
+    title: 'Delhi Bus Intelligence',
+    detail: 'Bus-GPS travel-time model and journey planner for Delhi',
     kind: 'project',
   },
   {
